@@ -6,10 +6,15 @@ import (
 
 type UsersRepository interface {
 	// AddUser добавляет нового пользователя.
-	AddUser(email, passwordHash string) error
+	//
+	// Возвращает id нового пользователя и ошибку.
+	AddUser(email, passwordHash string) (int64, error)
 
 	// GetEmails возвращает список зарегестрированных электронных почт.
 	GetEmails() ([]string, error)
+
+	// EmailExists возвращает true если пользователь с данной электронной почтой уже существует.
+	EmailExists(email string) bool
 }
 
 type usersRepository struct {
@@ -23,9 +28,18 @@ func NewUsersRepository(db *sql.DB) UsersRepository {
 }
 
 // AddUser добавляет нового пользователя.
-func (r *usersRepository) AddUser(email, passwordHash string) error {
-	_, err := r.db.Exec("INSERT INTO Users(email, passwordHash) VALUES($1, $2);", email, passwordHash)
-	return err
+//
+// Возвращает id нового пользователя и ошибку.
+func (r *usersRepository) AddUser(email, passwordHash string) (id int64, err error) {
+	res, err := r.db.Exec("INSERT INTO Users(email, password) VALUES($1, $2);", email, passwordHash)
+	if err != nil {
+		return -1, err
+	}
+	id, err = res.LastInsertId()
+	if err != nil {
+		return -1, err
+	}
+	return id, err
 }
 
 // GetEmails возвращает список зарегестрированных электронных почт.
@@ -46,4 +60,10 @@ func (r *usersRepository) GetEmails() (emails []string, err error) {
 	}
 
 	return emails, nil
+}
+
+// EmailExists возвращает true если пользователь с данной электронной почтой уже существует.
+func (r *usersRepository) EmailExists(email string) bool {
+	_, err := r.db.Exec("SELECT email FROM Users WHERE email = $1", email)
+	return err != sql.ErrNoRows
 }

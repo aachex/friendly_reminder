@@ -2,7 +2,6 @@ package test
 
 import (
 	"database/sql"
-	"slices"
 	"testing"
 
 	"github.com/artemwebber1/friendly_reminder/internal/repository"
@@ -14,25 +13,20 @@ func TestAddUser(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer db.Close()
+	defer func(db *sql.DB) {
+		if err = cleanDb(db); err != nil {
+			t.Fatal(err)
+		}
+		db.Close()
+	}(db)
 
 	repo := repository.NewUsersRepository(db)
 
 	const email = "abcde@gmail.com"
 	const passwordHash = "hashedPassword"
-	repo.AddUser(email, passwordHash)
+	_, err = repo.AddUser(email, passwordHash)
 
-	emails, err := repo.GetEmails()
-	if err != nil || !slices.Contains(emails, email) {
+	if err != nil || !repo.EmailExists(email) {
 		t.Fatal(err)
 	}
-
-	if err = cleanDb(db); err != nil {
-		t.Fatal(err)
-	}
-}
-
-func cleanDb(db *sql.DB) error {
-	_, err := db.Exec("DELETE FROM Users;")
-	return err
 }
