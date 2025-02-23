@@ -3,10 +3,13 @@ package main
 import (
 	"database/sql"
 	"fmt"
+	"log"
 	"net/http"
+	"time"
 
 	"github.com/artemwebber1/friendly_reminder/internal/config"
 	"github.com/artemwebber1/friendly_reminder/internal/controller"
+	"github.com/artemwebber1/friendly_reminder/internal/emailsender"
 	"github.com/artemwebber1/friendly_reminder/internal/repository"
 	_ "github.com/mattn/go-sqlite3" // sqlite3 driver
 )
@@ -29,18 +32,17 @@ func main() {
 	usersRepository := repository.NewUsersRepository(db)
 	itemsRepository := repository.NewItemsRepository(db)
 
-	id, _ := usersRepository.AddUser("achex@gmail.com", "password")
-	itemsRepository.AddItem("value", id)
-
 	usersController := controller.NewUsersController(usersRepository)
 
 	// Добавить эндпоинты
 	mux := http.NewServeMux()
 	usersController.AddEndpoints(mux)
 
-	// ...
+	// Запуск рассыльщика
+	emailSender := emailsender.New(config.Email, config.EmailPassword, config.EmailHost, config.EmailPort, usersRepository, itemsRepository)
+	emailSender.StartMailing(15 * time.Second)
 
-	// Запустить сервер
+	// Запуск сервера
 	address := fmt.Sprintf("localhost:%d", config.Port)
-	http.ListenAndServe(address, mux)
+	log.Fatal(http.ListenAndServe(address, mux))
 }

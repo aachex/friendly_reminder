@@ -31,7 +31,7 @@ func NewUsersRepository(db *sql.DB) UsersRepository {
 //
 // Возвращает id нового пользователя и ошибку.
 func (r *usersRepository) AddUser(email, passwordHash string) (id int64, err error) {
-	res, err := r.db.Exec("INSERT INTO Users(email, password) VALUES($1, $2);", email, passwordHash)
+	res, err := r.db.Exec("INSERT INTO Users(email, password) VALUES($1, $2)", email, passwordHash)
 	if err != nil {
 		return -1, err
 	}

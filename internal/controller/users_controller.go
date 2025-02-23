@@ -11,6 +11,7 @@ import (
 )
 
 // Возможные ошибки
+
 const (
 	userAlreadyExists = "Пользователь с данной электронной уже существует"
 )
@@ -58,4 +59,9 @@ func (c *UsersController) AddUser(w http.ResponseWriter, r *http.Request) {
 //
 // Обрабатывает POST запросы по пути '/user-auth'.
 func (C *UsersController) AuthUser(w http.ResponseWriter, r *http.Request) {
+	// Получить эл. почту и пароль
+
+	// Проверить, что они корректны. Если не корректны, вернуть код 403.
+
+	// Создать jwt и вернуть его
 }

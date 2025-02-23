@@ -8,10 +8,10 @@ import (
 
 type ItemsRepository interface {
 	// AddItem добавляет новую задачу в список пользователя.
-	AddItem(value string, userId int64) error
+	AddItem(value, userEmail string) error
 
-	// GetList возвращает список дел пользователя с указанным id.
-	GetList(userId int64) ([]models.ListItem, error)
+	// GetList возвращает список дел пользователя с указанным email.
+	GetList(userEmail string) ([]models.ListItem, error)
 }
 
 type itemsRepository struct {
@@ -24,19 +24,19 @@ func NewItemsRepository(db *sql.DB) ItemsRepository {
 	}
 }
 
-func (r *itemsRepository) AddItem(value string, userId int64) error {
+func (r *itemsRepository) AddItem(value, userEmail string) error {
 	_, err := r.db.Exec(`
-		INSERT INTO Items(value, numberInList, userId) VALUES(
+		INSERT INTO Items(value, numberInList, userEmail) VALUES(
 			$1,
-			(SELECT COUNT(*) FROM Items WHERE userId = $2) + 1,
+			(SELECT COUNT(*) FROM Items WHERE userEmail = $2) + 1,
 			$2)`,
-		value, userId)
+		value, userEmail)
 	return err
 }
 
 // GetList возвращает список дел пользователя с указанным id.
-func (r *itemsRepository) GetList(userId int64) ([]models.ListItem, error) {
-	rows, err := r.db.Query("SELECT value, numberInList FROM Items WHERE userId = $1", userId)
+func (r *itemsRepository) GetList(userEmail string) ([]models.ListItem, error) {
+	rows, err := r.db.Query("SELECT value, numberInList FROM Items WHERE userEmail = $1 ORDER BY numberInList", userEmail)
 	if err != nil {
 		return nil, err
 	}

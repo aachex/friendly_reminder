@@ -27,4 +27,7 @@ go.work.sum
 # database
 /db
 
+/config
+
+D:\projects\golang\Web\friendly_reminder\config\config.json
 api.txt
