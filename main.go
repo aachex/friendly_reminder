@@ -43,6 +43,6 @@ func main() {
 	emailSender.StartMailing(15 * time.Second)
 
 	// Запуск сервера
-	address := fmt.Sprintf("localhost:%d", config.Port)
+	address := fmt.Sprintf(":%d", config.Port)
 	log.Fatal(http.ListenAndServe(address, mux))
 }
