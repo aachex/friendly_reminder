@@ -37,6 +37,7 @@ func New(from, password, host string, port int, ur repository.UsersRepository, i
 func (s *EmailSender) StartMailing(d time.Duration) {
 	go func() {
 		for {
+			log.Println("Sending emails")
 			emails, err := s.usersRepo.GetEmails()
 			if err != nil {
 				log.Fatal(err)
@@ -59,10 +60,11 @@ func (s *EmailSender) StartMailing(d time.Duration) {
 						listStr += fmt.Sprintf("\n\t%d. %s", item.NumberInList, item.Value)
 					}
 
-					msg := []byte("Subject: A friendly reminder\r\nHere is your todo list" + listStr)
+					msg := []byte("Subject: A friendly reminder\r\nHere is your to-do list" + listStr)
 					if err = send(msg, s.from, email, s.host, s.port, s.auth); err != nil {
 						log.Fatal(err)
 					}
+					log.Printf("Sent email from '%s' to '%s'\n", s.from, email)
 				}(email)
 			}
 

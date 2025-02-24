@@ -73,6 +73,6 @@ func (r *usersRepository) GetEmails() (emails []string, err error) {
 
 // EmailExists возвращает true если пользователь с данной электронной почтой уже существует.
 func (r *usersRepository) EmailExists(email string) bool {
-	_, err := r.db.Exec("SELECT email FROM Users WHERE email = $1", email)
-	return err != sql.ErrNoRows
+	row := r.db.QueryRow("SELECT email FROM Users WHERE email = $1", email)
+	return row.Scan() != sql.ErrNoRows
 }

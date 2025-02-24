@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/artemwebber1/friendly_reminder/internal/config"
@@ -26,6 +27,14 @@ func main() {
 	}
 	defer db.Close()
 
+	// Инициализация логгера
+	logFile, err := os.OpenFile("app.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	log.SetOutput(logFile)
+
 	// Инициализация контроллеров и репозиториев
 	usersRepository := repository.NewUsersRepository(db)
 	itemsRepository := repository.NewItemsRepository(db)
@@ -38,7 +47,7 @@ func main() {
 
 	// Запуск рассыльщика
 	emailSender := emailsender.New(config.Email, config.EmailPassword, config.EmailHost, config.EmailPort, usersRepository, itemsRepository)
-	emailSender.StartMailing(15 * time.Second)
+	emailSender.StartMailing(60 * time.Second)
 
 	// Запуск сервера
 	address := fmt.Sprintf(":%d", config.Port)
