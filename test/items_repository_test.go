@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"testing"
 
+	"github.com/artemwebber1/friendly_reminder/internal/models"
 	"github.com/artemwebber1/friendly_reminder/internal/repository"
 )
 
@@ -23,7 +24,7 @@ func TestGetList(t *testing.T) {
 	repo := repository.NewUsersRepository(db)
 	const email = "abcde@gmail.com"
 	const passwordHash = "hashedPassword"
-	userId, err := repo.AddUser(email, passwordHash)
+	_, err = repo.AddUser(email, passwordHash)
 
 	if err != nil {
 		t.Fatal(err)
@@ -31,15 +32,22 @@ func TestGetList(t *testing.T) {
 
 	// Пользователь добавляет новые дела в свой список
 	itemsRepo := repository.NewItemsRepository(db)
-	const task = "Сделать дз"
-	itemsRepo.AddItem(task, userId)
+	tasks := []models.ListItem{
+		{Value: "сделать дз", NumberInList: 1},
+		{Value: "погладить кошку", NumberInList: 2},
+		{Value: "исправить оценки", NumberInList: 3},
+	}
 
-	list, err := itemsRepo.GetList(userId)
+	for _, task := range tasks {
+		itemsRepo.AddItem(task.Value, email)
+	}
+
+	list, err := itemsRepo.GetList(email)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	if len(list) == 0 || list[0].Value != task || list[0].NumberInList != int64(len(list)) {
+	if len(list) == 0 || !equalSlices(list, tasks) || list[len(list)-1].NumberInList != int64(len(list)) {
 		t.Fail()
 	}
 }

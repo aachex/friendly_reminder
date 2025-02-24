@@ -3,6 +3,7 @@ package controller
 import (
 	"encoding/json"
 	"io"
+	"log"
 	"net/http"
 
 	"github.com/artemwebber1/friendly_reminder/internal/hasher"
@@ -11,8 +12,9 @@ import (
 )
 
 // Возможные ошибки
+
 const (
-	userAlreadyExists = "Пользователь с данной электронной уже существует"
+	userAlreadyExists = "Пользователь с данной электронной почтой уже существует"
 )
 
 type UsersController struct {
@@ -37,6 +39,7 @@ func (c *UsersController) AddUser(w http.ResponseWriter, r *http.Request) {
 	bodyBytes, err := io.ReadAll(r.Body)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
 	}
 	defer r.Body.Close()
 
@@ -45,7 +48,10 @@ func (c *UsersController) AddUser(w http.ResponseWriter, r *http.Request) {
 
 	if c.repo.EmailExists(user.Email) {
 		http.Error(w, userAlreadyExists, http.StatusForbidden)
+		return
 	}
+
+	log.Printf("New user: %s\n", user.Email)
 
 	// Хэшируем паролль перед отправкой в бд
 	var hashedPassword []byte
@@ -58,4 +64,9 @@ func (c *UsersController) AddUser(w http.ResponseWriter, r *http.Request) {
 //
 // Обрабатывает POST запросы по пути '/user-auth'.
 func (C *UsersController) AuthUser(w http.ResponseWriter, r *http.Request) {
+	// Получить эл. почту и пароль
+
+	// Проверить, что они корректны. Если не корректны, вернуть код 403.
+
+	// Создать jwt и вернуть его
 }

@@ -3,44 +3,54 @@ package main
 import (
 	"database/sql"
 	"fmt"
+	"log"
 	"net/http"
+	"os"
+	"time"
 
 	"github.com/artemwebber1/friendly_reminder/internal/config"
 	"github.com/artemwebber1/friendly_reminder/internal/controller"
+	"github.com/artemwebber1/friendly_reminder/internal/emailsender"
 	"github.com/artemwebber1/friendly_reminder/internal/repository"
 	_ "github.com/mattn/go-sqlite3" // sqlite3 driver
 )
 
-const driverName = "sqlite3"
-const dbPath = `D:\projects\golang\Web\friendly_reminder\db\database.db`
-
 func main() {
-	// Инициализировать конфиг
 	config := config.NewConfig(`config\config.json`)
 
-	// подключиться к бд
+	// Подключение к бд
+	const driverName = "sqlite3"
+	const dbPath = `D:\projects\golang\Web\friendly_reminder\db\database.db`
 	db, err := sql.Open(driverName, dbPath)
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 	defer db.Close()
 
-	// Инициализировать контроллеры
+	// Инициализация логгера
+	logFile, err := os.OpenFile("app.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	log.SetOutput(logFile)
+
+	// Инициализация контроллеров и репозиториев
 	usersRepository := repository.NewUsersRepository(db)
 	itemsRepository := repository.NewItemsRepository(db)
 
-	id, _ := usersRepository.AddUser("achex@gmail.com", "password")
-	itemsRepository.AddItem("value", id)
-
 	usersController := controller.NewUsersController(usersRepository)
 
-	// Добавить эндпоинты
+	// Добавление эндпоинтов
 	mux := http.NewServeMux()
 	usersController.AddEndpoints(mux)
 
-	// ...
+	// Запуск рассыльщика
+	emailSender := emailsender.New(config.Email, config.EmailPassword, config.EmailHost, config.EmailPort, usersRepository, itemsRepository)
+	emailSender.StartMailing(60 * time.Second)
 
-	// Запустить сервер
-	address := fmt.Sprintf("localhost:%d", config.Port)
-	http.ListenAndServe(address, mux)
+	// Запуск сервера
+	address := fmt.Sprintf(":%d", config.Port)
+	fmt.Println("Listening:", config.Port)
+	log.Fatal(http.ListenAndServe(address, mux))
 }

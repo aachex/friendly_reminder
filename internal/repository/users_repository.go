@@ -10,6 +10,9 @@ type UsersRepository interface {
 	// Возвращает id нового пользователя и ошибку.
 	AddUser(email, passwordHash string) (int64, error)
 
+	// MakeSigned подписывает пользователя на рассылку электронных писем.
+	MakeSigned(email string, signed bool) error
+
 	// GetEmails возвращает список зарегестрированных электронных почт.
 	GetEmails() ([]string, error)
 
@@ -31,7 +34,7 @@ func NewUsersRepository(db *sql.DB) UsersRepository {
 //
 // Возвращает id нового пользователя и ошибку.
 func (r *usersRepository) AddUser(email, passwordHash string) (id int64, err error) {
-	res, err := r.db.Exec("INSERT INTO Users(email, password) VALUES($1, $2);", email, passwordHash)
+	res, err := r.db.Exec("INSERT INTO Users(email, password) VALUES($1, $2)", email, passwordHash)
 	if err != nil {
 		return -1, err
 	}
@@ -42,9 +45,15 @@ func (r *usersRepository) AddUser(email, passwordHash string) (id int64, err err
 	return id, err
 }
 
-// GetEmails возвращает список зарегестрированных электронных почт.
+// MakeSigned подписывает (или отписывает) пользователя на рассылку электронных писем.
+func (r *usersRepository) MakeSigned(email string, signed bool) error {
+	_, err := r.db.Exec("UPDATE Users SET signed = $1 WHERE email = $2", signed, email)
+	return err
+}
+
+// GetEmails возвращает список зарегестрированных электронных почт пользователей, подписанных на рассылку.
 func (r *usersRepository) GetEmails() (emails []string, err error) {
-	rows, err := r.db.Query("SELECT email FROM Users;")
+	rows, err := r.db.Query("SELECT email FROM Users WHERE signed = 1;")
 	if err != nil {
 		return nil, err
 	}
@@ -64,6 +73,6 @@ func (r *usersRepository) GetEmails() (emails []string, err error) {
 
 // EmailExists возвращает true если пользователь с данной электронной почтой уже существует.
 func (r *usersRepository) EmailExists(email string) bool {
-	_, err := r.db.Exec("SELECT email FROM Users WHERE email = $1", email)
-	return err != sql.ErrNoRows
+	row := r.db.QueryRow("SELECT email FROM Users WHERE email = $1", email)
+	return row.Scan() != sql.ErrNoRows
 }
