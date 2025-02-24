@@ -14,22 +14,26 @@ import (
 	_ "github.com/mattn/go-sqlite3" // sqlite3 driver
 )
 
-const driverName = "sqlite3"
-const dbPath = `D:\projects\golang\Web\friendly_reminder\db\database.db`
-
 func main() {
 	config := config.NewConfig(`config\config.json`)
 
 	// Подключение к бд
+	const driverName = "sqlite3"
+	const dbPath = `D:\projects\golang\Web\friendly_reminder\db\database.db`
 	db, err := sql.Open(driverName, dbPath)
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 	defer db.Close()
 
 	// Инициализация контроллеров и репозиториев
 	usersRepository := repository.NewUsersRepository(db)
 	itemsRepository := repository.NewItemsRepository(db)
+
+	// usersRepository.AddUser(config.Email, "aaaa")
+	// itemsRepository.AddItem("Сделать дз", config.Email)
+	// itemsRepository.AddItem("Погладить кота", config.Email)
+	// itemsRepository.AddItem("Ботать олимпиады", config.Email)
 
 	usersController := controller.NewUsersController(usersRepository)
 
