@@ -52,7 +52,7 @@ func TestMakeSigned(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = repo.MakeSigned(email)
+	err = repo.MakeSigned(email, true)
 	if err != nil {
 		t.Fatal(err)
 	}

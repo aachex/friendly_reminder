@@ -30,11 +30,6 @@ func main() {
 	usersRepository := repository.NewUsersRepository(db)
 	itemsRepository := repository.NewItemsRepository(db)
 
-	// usersRepository.AddUser(config.Email, "aaaa")
-	// itemsRepository.AddItem("Сделать дз", config.Email)
-	// itemsRepository.AddItem("Погладить кота", config.Email)
-	// itemsRepository.AddItem("Ботать олимпиады", config.Email)
-
 	usersController := controller.NewUsersController(usersRepository)
 
 	// Добавление эндпоинтов
@@ -47,6 +42,6 @@ func main() {
 
 	// Запуск сервера
 	address := fmt.Sprintf(":%d", config.Port)
-	fmt.Println("Listening:", address)
+	fmt.Println("Listening:", config.Port)
 	log.Fatal(http.ListenAndServe(address, mux))
 }
