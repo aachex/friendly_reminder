@@ -14,6 +14,7 @@ type EmailSender struct {
 	password string
 	host     string
 	port     int
+	auth     smtp.Auth
 
 	usersRepo repository.UsersRepository
 	itemsRepo repository.ItemsRepository
@@ -25,6 +26,7 @@ func New(from, password, host string, port int, ur repository.UsersRepository, i
 		password:  password,
 		host:      host,
 		port:      port,
+		auth:      smtp.PlainAuth("", from, password, host),
 		usersRepo: ur,
 		itemsRepo: ir,
 	}
@@ -54,11 +56,11 @@ func (s *EmailSender) StartMailing(d time.Duration) {
 					// ...
 					listStr := ""
 					for _, item := range list {
-						listStr += fmt.Sprintf("\n%d. %s", item.NumberInList, item.Value)
+						listStr += fmt.Sprintf("\n\t%d. %s", item.NumberInList, item.Value)
 					}
 
-					msg := []byte("Subject: A friendly reminder\nHere is your todo list" + listStr)
-					if err = send(s.from, email, s.password, s.host, s.port, msg); err != nil {
+					msg := []byte("Subject: A friendly reminder\r\nHere is your todo list" + listStr)
+					if err = send(msg, s.from, email, s.host, s.port, s.auth); err != nil {
 						log.Fatal(err)
 					}
 				}(email)
@@ -69,9 +71,7 @@ func (s *EmailSender) StartMailing(d time.Duration) {
 	}()
 }
 
-func send(from, to, password, host string, port int, msg []byte) error {
-	auth := smtp.PlainAuth("", from, password, host)
-
+func send(msg []byte, from, to, host string, port int, auth smtp.Auth) error {
 	addr := fmt.Sprintf("%s:%d", host, port)
 	err := smtp.SendMail(
 		addr,

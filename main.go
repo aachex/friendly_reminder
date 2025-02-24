@@ -18,23 +18,22 @@ const driverName = "sqlite3"
 const dbPath = `D:\projects\golang\Web\friendly_reminder\db\database.db`
 
 func main() {
-	// Инициализировать конфиг
 	config := config.NewConfig(`config\config.json`)
 
-	// подключиться к бд
+	// Подключение к бд
 	db, err := sql.Open(driverName, dbPath)
 	if err != nil {
 		panic(err)
 	}
 	defer db.Close()
 
-	// Инициализировать контроллеры
+	// Инициализация контроллеров и репозиториев
 	usersRepository := repository.NewUsersRepository(db)
 	itemsRepository := repository.NewItemsRepository(db)
 
 	usersController := controller.NewUsersController(usersRepository)
 
-	// Добавить эндпоинты
+	// Добавление эндпоинтов
 	mux := http.NewServeMux()
 	usersController.AddEndpoints(mux)
 
@@ -44,5 +43,6 @@ func main() {
 
 	// Запуск сервера
 	address := fmt.Sprintf(":%d", config.Port)
+	fmt.Println("Listening:", address)
 	log.Fatal(http.ListenAndServe(address, mux))
 }
