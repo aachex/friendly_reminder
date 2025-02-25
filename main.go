@@ -12,10 +12,15 @@ import (
 	"github.com/artemwebber1/friendly_reminder/internal/controller"
 	"github.com/artemwebber1/friendly_reminder/internal/emailsender"
 	"github.com/artemwebber1/friendly_reminder/internal/repository"
+	"github.com/joho/godotenv"
 	_ "github.com/mattn/go-sqlite3" // sqlite3 driver
 )
 
 func main() {
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Failed to load .env file")
+	}
 	config := config.NewConfig(`config\config.json`)
 
 	// Подключение к бд
@@ -46,8 +51,14 @@ func main() {
 	usersController.AddEndpoints(mux)
 
 	// Запуск рассыльщика
-	emailSender := emailsender.New(config.Email, config.EmailPassword, config.EmailHost, config.EmailPort, usersRepository, itemsRepository)
-	emailSender.StartMailing(60 * time.Second)
+	emailSender := emailsender.New(
+		os.Getenv("EMAIL"),
+		os.Getenv("EMAIL_PASSWORD"),
+		config.EmailHost,
+		config.EmailPort,
+		usersRepository,
+		itemsRepository)
+	go emailSender.StartMailing(60 * time.Second)
 
 	// Запуск сервера
 	address := fmt.Sprintf(":%d", config.Port)

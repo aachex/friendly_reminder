@@ -6,11 +6,9 @@ import (
 )
 
 type Config struct {
-	Port          int    `json:"port"`
-	Email         string `json:"email"`
-	EmailPassword string `json:"emailPassword"`
-	EmailHost     string `json:"emailHost"`
-	EmailPort     int    `json:"emailPort"`
+	Port      int    `json:"port"`
+	EmailHost string `json:"emailHost"`
+	EmailPort int    `json:"emailPort"`
 }
 
 func NewConfig(path string) *Config {

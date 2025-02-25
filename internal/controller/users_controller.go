@@ -60,6 +60,13 @@ func (c *UsersController) AddUser(w http.ResponseWriter, r *http.Request) {
 	c.repo.AddUser(user.Email, string(hashedPassword))
 }
 
+// SignUser подписывает пользователя с указанным email на рассылку писем.
+//
+// Обрабатывает PATCH запросы по пути '/sign-user?{email}'.
+func (c *UsersController) SignUser(w http.ResponseWriter, r *http.Request) {
+
+}
+
 // AuthUser осуществляет вход уже существующего пользователя в систему.
 //
 // Обрабатывает POST запросы по пути '/user-auth'.
