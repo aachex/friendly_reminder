@@ -8,12 +8,14 @@ import (
 
 	"github.com/artemwebber1/friendly_reminder/internal/config"
 	"github.com/artemwebber1/friendly_reminder/internal/email"
+	"github.com/artemwebber1/friendly_reminder/internal/hasher"
 	"github.com/artemwebber1/friendly_reminder/internal/models"
 	"github.com/artemwebber1/friendly_reminder/internal/repository"
 )
 
 const (
 	userAlreadyExists = "Пользователь с данной электронной почтой уже существует"
+	invalidToken      = "Недействительный токен"
 ) // Возможные ошибки
 
 type UsersController struct {
@@ -39,6 +41,7 @@ func NewUsersController(
 func (c *UsersController) AddEndpoints(mux *http.ServeMux) {
 	mux.HandleFunc("POST /new-user", c.AddUser)
 	mux.HandleFunc("POST /user-auth", c.AuthUser)
+	mux.HandleFunc("GET /confirm-email", c.ConfirmEmail)
 }
 
 // AddUser создаёт нового пользователя в базе данных.
@@ -60,11 +63,17 @@ func (c *UsersController) AddUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Все проверки прошли успешно, отправляем пользователю на почту ссылку для подтверждения электронной почты
+	// Отправляем пользователю на почту ссылку для подтверждения электронной почты
+	var confirmToken string
+	if !c.tokensRepo.HasToken(user.Email) {
+		confirmToken, err = c.tokensRepo.CreateToken(user.Email, hasher.Hash([]byte(user.Password)))
+	} else {
+		confirmToken, err = c.tokensRepo.UpdateToken(user.Email)
+	}
 
-	confirmToken, err := c.tokensRepo.CreateToken(user.Email)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 
 	// Ссылка для подтверждения электронной почты
@@ -80,9 +89,29 @@ func (c *UsersController) AddUser(w http.ResponseWriter, r *http.Request) {
 
 // ConfirmEmail является эндпоинтом, на который пользователь попадёт, подтверждая электронную почту.
 //
-// Обрабатывает POST запросы по пути '/confirm-email?{token}'.
+// Обрабатывает GET запросы по пути '/confirm-email?{token}'.
 func (c *UsersController) ConfirmEmail(w http.ResponseWriter, r *http.Request) {
+	token := r.URL.Query().Get("token")
+	if !c.tokensRepo.TokenExists(token) {
+		http.Error(w, invalidToken, http.StatusForbidden)
+		return
+	}
 
+	user, err := c.tokensRepo.GetUserByToken(token)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Write([]byte("Почта подтверждена"))
+	err = c.tokensRepo.DeleteToken(token)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusForbidden)
+		return
+	}
+
+	// Пользователь успешно подтвердил электронную почту, добавляем его в базу данных
+	c.usersRepo.AddUser(user.Email, user.Password)
 }
 
 // SignUser подписывает пользователя с указанным email на рассылку писем.
