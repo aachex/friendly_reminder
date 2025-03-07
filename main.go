@@ -52,11 +52,6 @@ func main() {
 	mux := http.NewServeMux()
 	usersController.AddEndpoints(mux)
 
-	usersRepository.AddUser("chekhonin.artem@gmail.com", "aaaa")
-	usersRepository.MakeSigned("chekhonin.artem@gmail.com", true)
-	itemsRepository.AddItem("погладить кошку", "chekhonin.artem@gmail.com")
-	itemsRepository.AddItem("сделать дз", "chekhonin.artem@gmail.com")
-
 	// Запуск рассыльщика
 	emailSender := email.NewSender(
 		os.Getenv("EMAIL"),
