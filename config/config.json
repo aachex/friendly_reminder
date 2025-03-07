@@ -1,5 +1,5 @@
 {
-    "port": 8080,
+    "port": "8080",
     "emailHost": "smtp.gmail.com",
-    "emailPort": 587
+    "emailPort": "587"
 }

@@ -34,7 +34,7 @@ func (r *itemsRepository) AddItem(value, userEmail string) error {
 	return err
 }
 
-// GetList возвращает список дел пользователя с указанным id.
+// GetList возвращает список дел пользователя с указанным email.
 func (r *itemsRepository) GetList(userEmail string) ([]models.ListItem, error) {
 	rows, err := r.db.Query("SELECT value, numberInList FROM Items WHERE userEmail = $1 ORDER BY numberInList", userEmail)
 	if err != nil {

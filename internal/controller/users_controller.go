@@ -2,11 +2,11 @@ package controller
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
-	"log"
 	"net/http"
 
-	"github.com/artemwebber1/friendly_reminder/internal/hasher"
+	"github.com/artemwebber1/friendly_reminder/internal/email"
 	"github.com/artemwebber1/friendly_reminder/internal/models"
 	"github.com/artemwebber1/friendly_reminder/internal/repository"
 )
@@ -18,7 +18,8 @@ const (
 )
 
 type UsersController struct {
-	repo repository.UsersRepository
+	repo        repository.UsersRepository
+	emailSender email.EmailSenderClient
 }
 
 func NewUsersController(repo repository.UsersRepository) *UsersController {
@@ -51,13 +52,16 @@ func (c *UsersController) AddUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Printf("New user: %s\n", user.Email)
+	// Все проверки прошли успешно, отправляем пользователю на почту ссылку для подтверждения электронной почты
 
-	// Хэшируем паролль перед отправкой в бд
-	var hashedPassword []byte
-	hasher.Hash([]byte(user.Password), &hashedPassword)
+	confirmLink := "..."
 
-	c.repo.AddUser(user.Email, string(hashedPassword))
+	const subject = "Подтверждение электронной почты"
+	body := fmt.Sprintf("Пожалуйста, подтвердите электронную почту, перейдя по ссылке:\n%s\n\nЕсли вы не ждали этого письма, проигнорируйте его.", confirmLink)
+	c.emailSender.Send(
+		subject,
+		body,
+		user.Email)
 }
 
 // SignUser подписывает пользователя с указанным email на рассылку писем.

@@ -10,13 +10,15 @@ import (
 
 	"github.com/artemwebber1/friendly_reminder/internal/config"
 	"github.com/artemwebber1/friendly_reminder/internal/controller"
-	"github.com/artemwebber1/friendly_reminder/internal/emailsender"
+	"github.com/artemwebber1/friendly_reminder/internal/email"
+	"github.com/artemwebber1/friendly_reminder/internal/reminder"
 	"github.com/artemwebber1/friendly_reminder/internal/repository"
 	"github.com/joho/godotenv"
 	_ "github.com/mattn/go-sqlite3" // sqlite3 driver
 )
 
 func main() {
+	// Загрузка переменных окружения
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatal("Failed to load .env file")
@@ -50,18 +52,24 @@ func main() {
 	mux := http.NewServeMux()
 	usersController.AddEndpoints(mux)
 
+	usersRepository.AddUser("chekhonin.artem@gmail.com", "aaaa")
+	usersRepository.MakeSigned("chekhonin.artem@gmail.com", true)
+	itemsRepository.AddItem("погладить кошку", "chekhonin.artem@gmail.com")
+	itemsRepository.AddItem("сделать дз", "chekhonin.artem@gmail.com")
+
 	// Запуск рассыльщика
-	emailSender := emailsender.New(
+	emailSender := email.NewSender(
 		os.Getenv("EMAIL"),
 		os.Getenv("EMAIL_PASSWORD"),
 		config.EmailHost,
 		config.EmailPort,
 		usersRepository,
 		itemsRepository)
-	go emailSender.StartMailing(60 * time.Second)
+
+	listSender := reminder.New(*emailSender, usersRepository, itemsRepository)
+	go listSender.StartSending(60 * time.Second)
 
 	// Запуск сервера
-	address := fmt.Sprintf(":%d", config.Port)
 	fmt.Println("Listening:", config.Port)
-	log.Fatal(http.ListenAndServe(address, mux))
+	log.Fatal(http.ListenAndServe(":"+config.Port, mux))
 }
