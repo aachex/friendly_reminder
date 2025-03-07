@@ -1,6 +1,7 @@
 package email
 
 import (
+	"encoding/base64"
 	"fmt"
 	"log"
 	"net/smtp"
@@ -32,7 +33,15 @@ func NewSender(from, password, host, port string, ur repository.UsersRepository,
 }
 
 func (s *EmailSenderClient) Send(subject, body, to string) error {
-	msg := fmt.Appendf(nil, "Subject: %s\r\n%s", subject, body)
+	msg := fmt.Appendf(
+		nil,
+		"To: %s\r\n"+
+			"Subject: %s\r\n"+
+			"MIME-Version: 1.0\r\n"+
+			"Content-Type: text/plain; charset=\"UTF-8\"\r\n"+
+			"Content-Transfer-Encoding: base64\r\n\r\n"+
+			"%s",
+		to, subject, base64.StdEncoding.EncodeToString([]byte(body)))
 
 	addr := s.host + ":" + s.port
 	err := smtp.SendMail(

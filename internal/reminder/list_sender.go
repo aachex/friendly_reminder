@@ -10,12 +10,12 @@ import (
 )
 
 type ListSender struct {
-	sender    email.EmailSenderClient
+	sender    *email.EmailSenderClient
 	usersRepo repository.UsersRepository
 	itemsRepo repository.ItemsRepository
 }
 
-func New(s email.EmailSenderClient, ur repository.UsersRepository, ir repository.ItemsRepository) *ListSender {
+func New(s *email.EmailSenderClient, ur repository.UsersRepository, ir repository.ItemsRepository) *ListSender {
 	return &ListSender{
 		sender:    s,
 		usersRepo: ur,
