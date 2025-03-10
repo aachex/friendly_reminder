@@ -43,25 +43,25 @@ func main() {
 	log.SetOutput(logFile)
 
 	// Инициализация контроллеров и репозиториев
-	usersRepository := repository.NewUsersRepository(db)
-	itemsRepository := repository.NewItemsRepository(db)
-	tokensRepository := repository.NewEmailTokensRepository(db)
+	usersRepo := repository.NewUsersRepository(db)
+	itemsRepo := repository.NewItemsRepository(db)
+	unverifiedUsersRepo := repository.NewUnverifiedUsersRepository(db)
 
 	emailSender := email.NewSender(
 		os.Getenv("EMAIL"),
 		os.Getenv("EMAIL_PASSWORD"),
 		config.Email.Host,
 		config.Email.Port,
-		usersRepository,
-		itemsRepository)
+		usersRepo,
+		itemsRepo)
 
 	// Создание контроллеров и добавление эндпоинтов
 	mux := http.NewServeMux()
-	usersController := controller.NewUsersController(usersRepository, tokensRepository, emailSender, *config)
+	usersController := controller.NewUsersController(usersRepo, unverifiedUsersRepo, emailSender, *config)
 	usersController.AddEndpoints(mux)
 
 	// Запуск рассыльщика
-	listSender := reminder.New(emailSender, usersRepository, itemsRepository)
+	listSender := reminder.New(emailSender, usersRepo, itemsRepo)
 	go listSender.StartSending(60 * time.Second)
 
 	// Запуск сервера

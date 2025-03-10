@@ -9,7 +9,12 @@ import (
 	"github.com/artemwebber1/friendly_reminder/internal/repository"
 )
 
-type EmailSenderClient struct {
+// Sender отправляет электронное письмо на указанный адрес.
+type Sender interface {
+	Send(subject, body, to string) error
+}
+
+type defaultSender struct {
 	from     string
 	password string
 	host     string
@@ -20,8 +25,8 @@ type EmailSenderClient struct {
 	itemsRepo repository.ItemsRepository
 }
 
-func NewSender(from, password, host, port string, ur repository.UsersRepository, ir repository.ItemsRepository) *EmailSenderClient {
-	return &EmailSenderClient{
+func NewSender(from, password, host, port string, ur repository.UsersRepository, ir repository.ItemsRepository) Sender {
+	return &defaultSender{
 		from:      from,
 		password:  password,
 		host:      host,
@@ -32,7 +37,7 @@ func NewSender(from, password, host, port string, ur repository.UsersRepository,
 	}
 }
 
-func (s *EmailSenderClient) Send(subject, body, to string) error {
+func (s *defaultSender) Send(subject, body, to string) error {
 	msg := fmt.Appendf(
 		nil,
 		"To: %s\r\n"+

@@ -19,22 +19,22 @@ const (
 ) // Возможные ошибки
 
 type UsersController struct {
-	usersRepo   repository.UsersRepository
-	tokensRepo  repository.EmailTokensRepository
-	emailSender *email.EmailSenderClient
-	config      config.Config
+	usersRepo           repository.UsersRepository
+	unverifiedUsersRepo repository.UnverifiedUsersRepository
+	emailSender         email.Sender
+	config              config.Config
 }
 
 func NewUsersController(
 	ur repository.UsersRepository,
-	tr repository.EmailTokensRepository,
-	emailSender *email.EmailSenderClient,
+	tr repository.UnverifiedUsersRepository,
+	emailSender email.Sender,
 	cfg config.Config) *UsersController {
 	return &UsersController{
-		usersRepo:   ur,
-		tokensRepo:  tr,
-		emailSender: emailSender,
-		config:      cfg,
+		usersRepo:           ur,
+		unverifiedUsersRepo: tr,
+		emailSender:         emailSender,
+		config:              cfg,
 	}
 }
 
@@ -65,10 +65,10 @@ func (c *UsersController) AddUser(w http.ResponseWriter, r *http.Request) {
 
 	// Отправляем пользователю на почту ссылку для подтверждения электронной почты
 	var confirmToken string
-	if !c.tokensRepo.HasToken(user.Email) {
-		confirmToken, err = c.tokensRepo.CreateToken(user.Email, hasher.Hash([]byte(user.Password)))
+	if !c.unverifiedUsersRepo.HasToken(user.Email) {
+		confirmToken, err = c.unverifiedUsersRepo.CreateToken(user.Email, hasher.Hash([]byte(user.Password)))
 	} else {
-		confirmToken, err = c.tokensRepo.UpdateToken(user.Email)
+		confirmToken, err = c.unverifiedUsersRepo.UpdateToken(user.Email)
 	}
 
 	if err != nil {
@@ -92,19 +92,19 @@ func (c *UsersController) AddUser(w http.ResponseWriter, r *http.Request) {
 // Обрабатывает GET запросы по пути '/confirm-email?{token}'.
 func (c *UsersController) ConfirmEmail(w http.ResponseWriter, r *http.Request) {
 	token := r.URL.Query().Get("token")
-	if !c.tokensRepo.TokenExists(token) {
+	if !c.unverifiedUsersRepo.TokenExists(token) {
 		http.Error(w, invalidToken, http.StatusForbidden)
 		return
 	}
 
-	user, err := c.tokensRepo.GetUserByToken(token)
+	user, err := c.unverifiedUsersRepo.GetUserByToken(token)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	w.Write([]byte("Почта подтверждена"))
-	err = c.tokensRepo.DeleteToken(token)
+	err = c.unverifiedUsersRepo.DeleteToken(token)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusForbidden)
 		return
