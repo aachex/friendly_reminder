@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strconv"
 
 	"github.com/artemwebber1/friendly_reminder/internal/config"
 	"github.com/artemwebber1/friendly_reminder/internal/email"
@@ -13,28 +14,23 @@ import (
 	"github.com/artemwebber1/friendly_reminder/internal/repository"
 )
 
-const (
-	userAlreadyExists = "Пользователь с данной электронной почтой уже существует"
-	invalidToken      = "Недействительный токен"
-) // Возможные ошибки
-
 type UsersController struct {
 	usersRepo           repository.UsersRepository
 	unverifiedUsersRepo repository.UnverifiedUsersRepository
 	emailSender         email.Sender
-	config              config.Config
+	cfg                 *config.Config
 }
 
 func NewUsersController(
 	ur repository.UsersRepository,
 	tr repository.UnverifiedUsersRepository,
 	emailSender email.Sender,
-	cfg config.Config) *UsersController {
+	cfg *config.Config) *UsersController {
 	return &UsersController{
 		usersRepo:           ur,
 		unverifiedUsersRepo: tr,
 		emailSender:         emailSender,
-		config:              cfg,
+		cfg:                 cfg,
 	}
 }
 
@@ -42,6 +38,7 @@ func (c *UsersController) AddEndpoints(mux *http.ServeMux) {
 	mux.HandleFunc("POST /new-user", c.AddUser)
 	mux.HandleFunc("POST /user-auth", c.AuthUser)
 	mux.HandleFunc("GET /confirm-email", c.ConfirmEmail)
+	mux.HandleFunc("PATCH /sign-user", c.SignUser)
 }
 
 // AddUser создаёт нового пользователя в базе данных.
@@ -59,7 +56,7 @@ func (c *UsersController) AddUser(w http.ResponseWriter, r *http.Request) {
 	json.Unmarshal(bodyBytes, &user)
 
 	if c.usersRepo.EmailExists(user.Email) {
-		http.Error(w, userAlreadyExists, http.StatusForbidden)
+		http.Error(w, "Пользователь с данной электронной почтой уже существует", http.StatusForbidden)
 		return
 	}
 
@@ -77,7 +74,7 @@ func (c *UsersController) AddUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Ссылка для подтверждения электронной почты
-	confirmLink := c.config.Host + ":" + c.config.Port + "/confirm-email?token=" + confirmToken
+	confirmLink := c.cfg.Host + ":" + c.cfg.Port + "/confirm-email?token=" + confirmToken
 
 	const subject = "Подтверждение электронной почты"
 	body := fmt.Sprintf("Пожалуйста, подтвердите свою электронную почту, перейдя по ссылке:\n%s\n\nЕсли вы не запрашивали это письмо, проигнорируйте его.", confirmLink)
@@ -93,7 +90,7 @@ func (c *UsersController) AddUser(w http.ResponseWriter, r *http.Request) {
 func (c *UsersController) ConfirmEmail(w http.ResponseWriter, r *http.Request) {
 	token := r.URL.Query().Get("token")
 	if !c.unverifiedUsersRepo.TokenExists(token) {
-		http.Error(w, invalidToken, http.StatusForbidden)
+		http.Error(w, "Недействительный токен", http.StatusForbidden)
 		return
 	}
 
@@ -116,9 +113,15 @@ func (c *UsersController) ConfirmEmail(w http.ResponseWriter, r *http.Request) {
 
 // SignUser подписывает пользователя с указанным email на рассылку писем.
 //
-// Обрабатывает PATCH запросы по пути '/sign-user?{email}'.
+// Обрабатывает PATCH запросы по пути '/sign-user?{email}&{sign}'.
 func (c *UsersController) SignUser(w http.ResponseWriter, r *http.Request) {
-
+	usrEmail := r.URL.Query().Get("email")
+	sign, err := strconv.ParseBool(r.URL.Query().Get("sign"))
+	if err != nil {
+		http.Error(w, "Параметр sign: неправильное значение", http.StatusBadRequest)
+		return
+	}
+	c.usersRepo.MakeSigned(usrEmail, sign)
 }
 
 // AuthUser осуществляет вход уже существующего пользователя в систему.

@@ -14,7 +14,7 @@ type Config struct {
 		Port string `json:"emailPort"`
 	} `json:"emailOptions"`
 	ListSenderOptions struct {
-		IntervalInSeconds time.Duration `json:"intervalInSeconds"`
+		DelayInSeconds time.Duration `json:"delayInSeconds"`
 	} `json:"listSenderOptions"`
 }
 

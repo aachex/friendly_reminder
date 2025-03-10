@@ -58,14 +58,15 @@ func main() {
 
 	// Создание контроллеров и добавление эндпоинтов
 	mux := http.NewServeMux()
-	usersController := controller.NewUsersController(usersRepo, unverifiedUsersRepo, emailSender, *config)
+	usersController := controller.NewUsersController(usersRepo, unverifiedUsersRepo, emailSender, config)
 	usersController.AddEndpoints(mux)
 
 	// Запуск рассыльщика
 	listSender := reminder.New(emailSender, usersRepo, tasksRepo)
-	go listSender.StartSending(config.ListSenderOptions.IntervalInSeconds * time.Second)
+	go listSender.StartSending(config.ListSenderOptions.DelayInSeconds * time.Second)
 
 	// Запуск сервера
-	fmt.Println("Listening:", config.Host+config.Port)
+	addr := config.Host + ":" + config.Port
+	fmt.Println("Listening:", addr)
 	log.Fatal(http.ListenAndServe(":"+config.Port, mux))
 }

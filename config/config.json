@@ -6,6 +6,6 @@
         "emailPort": "587"
     },
     "listSenderOptions": {
-        "intervalInSeconds": 60
+        "delayInSeconds": 60
     }
 }
