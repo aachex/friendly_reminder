@@ -1,6 +1,8 @@
 package models
 
-type ListItem struct {
+type Task struct {
+	Id           int64  `json:"task_id"`
+	UserEmail    string `json:"user_email"`
 	Value        string `json:"value"`
 	NumberInList int64  `json:"numberInList"`
 }

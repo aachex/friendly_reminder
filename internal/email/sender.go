@@ -22,10 +22,10 @@ type defaultSender struct {
 	auth     smtp.Auth
 
 	usersRepo repository.UsersRepository
-	itemsRepo repository.ItemsRepository
+	tasksRepo repository.TasksRepository
 }
 
-func NewSender(from, password, host, port string, ur repository.UsersRepository, ir repository.ItemsRepository) Sender {
+func NewSender(from, password, host, port string, ur repository.UsersRepository, tr repository.TasksRepository) Sender {
 	return &defaultSender{
 		from:      from,
 		password:  password,
@@ -33,7 +33,7 @@ func NewSender(from, password, host, port string, ur repository.UsersRepository,
 		port:      port,
 		auth:      smtp.PlainAuth("", from, password, host),
 		usersRepo: ur,
-		itemsRepo: ir,
+		tasksRepo: tr,
 	}
 }
 

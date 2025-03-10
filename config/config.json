@@ -1,8 +1,11 @@
 {
     "host": "http://localhost",
     "port": "8080",
-    "email": {
+    "emailOptions": {
         "emailHost": "smtp.gmail.com",
         "emailPort": "587"
+    },
+    "listSenderOptions": {
+        "intervalInSeconds": 60
     }
 }

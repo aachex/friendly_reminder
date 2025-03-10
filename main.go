@@ -32,6 +32,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	db.Exec("PRAGMA FOREIGN_KEYS=ON")
 	defer db.Close()
 
 	// Инициализация логгера
@@ -44,16 +45,16 @@ func main() {
 
 	// Инициализация контроллеров и репозиториев
 	usersRepo := repository.NewUsersRepository(db)
-	itemsRepo := repository.NewItemsRepository(db)
+	tasksRepo := repository.NewTasksRepository(db)
 	unverifiedUsersRepo := repository.NewUnverifiedUsersRepository(db)
 
 	emailSender := email.NewSender(
 		os.Getenv("EMAIL"),
 		os.Getenv("EMAIL_PASSWORD"),
-		config.Email.Host,
-		config.Email.Port,
+		config.EmailOptions.Host,
+		config.EmailOptions.Port,
 		usersRepo,
-		itemsRepo)
+		tasksRepo)
 
 	// Создание контроллеров и добавление эндпоинтов
 	mux := http.NewServeMux()
@@ -61,10 +62,10 @@ func main() {
 	usersController.AddEndpoints(mux)
 
 	// Запуск рассыльщика
-	listSender := reminder.New(emailSender, usersRepo, itemsRepo)
-	go listSender.StartSending(60 * time.Second)
+	listSender := reminder.New(emailSender, usersRepo, tasksRepo)
+	go listSender.StartSending(config.ListSenderOptions.IntervalInSeconds * time.Second)
 
 	// Запуск сервера
-	fmt.Println("Listening:", config.Port)
+	fmt.Println("Listening:", config.Host+config.Port)
 	log.Fatal(http.ListenAndServe(":"+config.Port, mux))
 }

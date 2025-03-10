@@ -8,7 +8,7 @@ type UsersRepository interface {
 	// AddUser добавляет нового пользователя.
 	//
 	// Возвращает id нового пользователя и ошибку.
-	AddUser(email, passwordHash string) (int64, error)
+	AddUser(email, password string) (int64, error)
 
 	// MakeSigned подписывает пользователя на рассылку электронных писем.
 	MakeSigned(email string, signed bool) error
@@ -33,8 +33,8 @@ func NewUsersRepository(db *sql.DB) UsersRepository {
 // AddUser добавляет нового пользователя.
 //
 // Возвращает id нового пользователя и ошибку.
-func (r *usersRepository) AddUser(email, passwordHash string) (id int64, err error) {
-	res, err := r.db.Exec("INSERT INTO Users(email, password) VALUES($1, $2)", email, passwordHash)
+func (r *usersRepository) AddUser(email, password string) (id int64, err error) {
+	res, err := r.db.Exec("INSERT INTO Users(email, password) VALUES($1, $2)", email, password)
 	if err != nil {
 		return -1, err
 	}

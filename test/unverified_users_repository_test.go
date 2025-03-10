@@ -2,14 +2,12 @@ package test
 
 import (
 	"database/sql"
-	"slices"
 	"testing"
 
 	"github.com/artemwebber1/friendly_reminder/internal/repository"
-	_ "github.com/mattn/go-sqlite3" // sqlite3 driver
 )
 
-func TestAddUser(t *testing.T) {
+func TestCreateToken(t *testing.T) {
 	db, err := sql.Open("sqlite3", `D:\projects\golang\Web\friendly_reminder\db\database.db`)
 	if err != nil {
 		t.Fatal(err)
@@ -21,16 +19,18 @@ func TestAddUser(t *testing.T) {
 		db.Close()
 	}(db)
 
-	repo := repository.NewUsersRepository(db)
-
-	_, err = repo.AddUser(email, passwordHash)
-
-	if err != nil || !repo.EmailExists(email) {
+	tokRepo := repository.NewUnverifiedUsersRepository(db)
+	tok, err := tokRepo.CreateToken(email, passwordHash)
+	if err != nil {
 		t.Fatal(err)
+	}
+
+	if !tokRepo.TokenExists(tok) || !tokRepo.HasToken(email) {
+		t.Fail()
 	}
 }
 
-func TestMakeSigned(t *testing.T) {
+func TestGetUserByToken(t *testing.T) {
 	db, err := sql.Open("sqlite3", `D:\projects\golang\Web\friendly_reminder\db\database.db`)
 	if err != nil {
 		t.Fatal(err)
@@ -42,24 +42,23 @@ func TestMakeSigned(t *testing.T) {
 		db.Close()
 	}(db)
 
-	repo := repository.NewUsersRepository(db)
+	tokRepo := repository.NewUnverifiedUsersRepository(db)
 
-	_, err = repo.AddUser(email, passwordHash)
+	tok, err := tokRepo.CreateToken(email, passwordHash)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	err = repo.MakeSigned(email, true)
+	if !tokRepo.HasToken(email) {
+		t.Fatalf("У пользователя %s нет токена", email)
+	}
+
+	user, err := tokRepo.GetUserByToken(tok)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	signedEmails, err := repo.GetEmails()
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	if !slices.Contains(signedEmails, email) {
-		t.Fail()
+	if user.Email != email || user.Password != passwordHash {
+		t.Fatal("Несоответствие эл. почты или пароля")
 	}
 }

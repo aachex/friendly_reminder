@@ -13,14 +13,14 @@ import (
 type ListSender struct {
 	sender    email.Sender
 	usersRepo repository.UsersRepository
-	itemsRepo repository.ItemsRepository
+	tasksRepo repository.TasksRepository
 }
 
-func New(s email.Sender, ur repository.UsersRepository, ir repository.ItemsRepository) *ListSender {
+func New(s email.Sender, ur repository.UsersRepository, tr repository.TasksRepository) *ListSender {
 	return &ListSender{
 		sender:    s,
 		usersRepo: ur,
-		itemsRepo: ir,
+		tasksRepo: tr,
 	}
 }
 
@@ -44,7 +44,7 @@ func (s *ListSender) StartSending(d time.Duration) {
 
 func (s *ListSender) sendList(email string) {
 	// Получаем список пользователя
-	list, err := s.itemsRepo.GetList(email)
+	userTasks, err := s.tasksRepo.GetList(email)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -54,12 +54,12 @@ func (s *ListSender) sendList(email string) {
 	// 2. Задача 2
 	// ...
 	listStr := ""
-	for _, item := range list {
+	for _, item := range userTasks {
 		listStr += fmt.Sprintf("\n%d. %s", item.NumberInList, item.Value)
 	}
 
 	subject := "Ваш список дел"
-	if len(list) == 0 {
+	if len(userTasks) == 0 {
 		// Отписываем пользователя от рассылки, если его список пуст, и информируем его об этом.
 		subject = "Вы были отписаны от рассылки"
 		listStr = "Ваш список дел пуст. Вы будете отписаны от рассылки, пока не добавите новые дела и не подпишетесь на рассылку снова."
