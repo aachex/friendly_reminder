@@ -5,8 +5,8 @@ import (
 	"log"
 	"time"
 
-	"github.com/artemwebber1/friendly_reminder/internal/email"
 	"github.com/artemwebber1/friendly_reminder/internal/repository"
+	"github.com/artemwebber1/friendly_reminder/pkg/email"
 )
 
 // ListSender отправляет списки дел пользователям, используя интерфейс [email.Sender].
@@ -24,7 +24,7 @@ func New(s email.Sender, ur repository.UsersRepository, tr repository.TasksRepos
 	}
 }
 
-// StartMailing в отдельной горутине достаёт из базы данных электронные почты всех пользователей,
+// StartSending в достаёт из базы данных электронные почты всех пользователей,
 // подписанных на рассылку, и отправляет им их списки дел c указанным интервалом.
 func (s *ListSender) StartSending(d time.Duration) {
 	for {

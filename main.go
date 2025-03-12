@@ -10,9 +10,9 @@ import (
 
 	"github.com/artemwebber1/friendly_reminder/internal/config"
 	"github.com/artemwebber1/friendly_reminder/internal/controller"
-	"github.com/artemwebber1/friendly_reminder/internal/email"
 	"github.com/artemwebber1/friendly_reminder/internal/reminder"
 	"github.com/artemwebber1/friendly_reminder/internal/repository"
+	"github.com/artemwebber1/friendly_reminder/pkg/email"
 	"github.com/joho/godotenv"
 	_ "github.com/mattn/go-sqlite3" // sqlite3 driver
 )
@@ -52,9 +52,7 @@ func main() {
 		os.Getenv("EMAIL"),
 		os.Getenv("EMAIL_PASSWORD"),
 		config.EmailOptions.Host,
-		config.EmailOptions.Port,
-		usersRepo,
-		tasksRepo)
+		config.EmailOptions.Port)
 
 	// Создание контроллеров и добавление эндпоинтов
 	mux := http.NewServeMux()

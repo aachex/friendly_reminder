@@ -10,6 +10,9 @@ type TasksRepository interface {
 	// AddItem добавляет новую задачу в список пользователя.
 	AddTask(value, userEmail string) error
 
+	// DeleteTask по номеру удаляет задачу из списка указанного пользователя.
+	DeleteTask(num int, userEmail string) error
+
 	// GetList возвращает список дел пользователя с указанным email.
 	GetList(userEmail string) ([]models.Task, error)
 }
@@ -31,6 +34,13 @@ func (r *tasksRepository) AddTask(value, userEmail string) error {
 			(SELECT COUNT(*) FROM tasks WHERE user_email = $2) + 1,
 			$2)`,
 		value, userEmail)
+
+	return err
+}
+
+// DeleteTask по номеру удаляет задачу из списка указанного пользователя.
+func (r *tasksRepository) DeleteTask(num int, userEmail string) error {
+	_, err := r.db.Exec("DELETE FROM tasks WHERE user_email = $1 AND number_in_list = @2", userEmail, num)
 	return err
 }
 

@@ -1,7 +1,6 @@
 package test
 
 import (
-	"database/sql"
 	"slices"
 	"testing"
 
@@ -10,46 +9,30 @@ import (
 )
 
 func TestAddUser(t *testing.T) {
-	db, err := sql.Open("sqlite3", `D:\projects\golang\Web\friendly_reminder\db\database.db`)
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer func(db *sql.DB) {
-		if err = cleanDb(db); err != nil {
-			t.Fatal(err)
-		}
-		db.Close()
-	}(db)
+	db := openDb(t)
+	defer cleanDb(db, t)
 
 	repo := repository.NewUsersRepository(db)
 
-	_, err = repo.AddUser(email, passwordHash)
+	_, err := repo.AddUser(mock.email, mock.pwd)
 
-	if err != nil || !repo.EmailExists(email) {
+	if err != nil || !repo.EmailExists(mock.email) {
 		t.Fatal(err)
 	}
 }
 
 func TestMakeSigned(t *testing.T) {
-	db, err := sql.Open("sqlite3", `D:\projects\golang\Web\friendly_reminder\db\database.db`)
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer func(db *sql.DB) {
-		if err = cleanDb(db); err != nil {
-			t.Fatal(err)
-		}
-		db.Close()
-	}(db)
+	db := openDb(t)
+	defer cleanDb(db, t)
 
 	repo := repository.NewUsersRepository(db)
 
-	_, err = repo.AddUser(email, passwordHash)
+	_, err := repo.AddUser(mock.email, mock.pwd)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	err = repo.MakeSigned(email, true)
+	err = repo.MakeSigned(mock.email, true)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -59,7 +42,7 @@ func TestMakeSigned(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if !slices.Contains(signedEmails, email) {
+	if !slices.Contains(signedEmails, mock.email) {
 		t.Fail()
 	}
 }

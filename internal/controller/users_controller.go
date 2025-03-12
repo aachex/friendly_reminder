@@ -1,59 +1,55 @@
 package controller
 
 import (
-	"encoding/json"
 	"fmt"
-	"io"
+	"log"
 	"net/http"
 	"strconv"
 
 	"github.com/artemwebber1/friendly_reminder/internal/config"
-	"github.com/artemwebber1/friendly_reminder/internal/email"
 	"github.com/artemwebber1/friendly_reminder/internal/hasher"
 	"github.com/artemwebber1/friendly_reminder/internal/models"
 	"github.com/artemwebber1/friendly_reminder/internal/repository"
+	"github.com/artemwebber1/friendly_reminder/pkg/email"
+	"github.com/artemwebber1/friendly_reminder/pkg/middleware"
 )
 
 type UsersController struct {
+	emailSender email.Sender
+	cfg         *config.Config
+
 	usersRepo           repository.UsersRepository
 	unverifiedUsersRepo repository.UnverifiedUsersRepository
-	emailSender         email.Sender
-	cfg                 *config.Config
 }
 
 func NewUsersController(
 	ur repository.UsersRepository,
-	tr repository.UnverifiedUsersRepository,
+	uur repository.UnverifiedUsersRepository,
 	emailSender email.Sender,
 	cfg *config.Config) *UsersController {
 	return &UsersController{
 		usersRepo:           ur,
-		unverifiedUsersRepo: tr,
+		unverifiedUsersRepo: uur,
 		emailSender:         emailSender,
 		cfg:                 cfg,
 	}
 }
 
 func (c *UsersController) AddEndpoints(mux *http.ServeMux) {
-	mux.HandleFunc("POST /new-user", c.AddUser)
+	mux.HandleFunc("POST /new-user", c.SendConfirmEmailLink)
 	mux.HandleFunc("POST /user-auth", c.AuthUser)
 	mux.HandleFunc("GET /confirm-email", c.ConfirmEmail)
-	mux.HandleFunc("PATCH /sign-user", c.SignUser)
+	mux.HandleFunc("PATCH /sign-user", middleware.RequireAuthorization(c.SignUser))
 }
 
 // AddUser создаёт нового пользователя в базе данных.
 //
 // Обрабатывает POST запросы по пути '/new-user'.
-func (c *UsersController) AddUser(w http.ResponseWriter, r *http.Request) {
-	bodyBytes, err := io.ReadAll(r.Body)
+func (c *UsersController) SendConfirmEmailLink(w http.ResponseWriter, r *http.Request) {
+	user, err := readBody[models.User](r.Body)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
 	}
-	defer r.Body.Close()
-
-	var user models.User
-	json.Unmarshal(bodyBytes, &user)
 
 	if c.usersRepo.EmailExists(user.Email) {
 		http.Error(w, "Пользователь с данной электронной почтой уже существует", http.StatusForbidden)
@@ -61,6 +57,7 @@ func (c *UsersController) AddUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Отправляем пользователю на почту ссылку для подтверждения электронной почты
+
 	var confirmToken string
 	if !c.unverifiedUsersRepo.HasToken(user.Email) {
 		confirmToken, err = c.unverifiedUsersRepo.CreateToken(user.Email, hasher.Hash([]byte(user.Password)))
@@ -74,7 +71,9 @@ func (c *UsersController) AddUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Ссылка для подтверждения электронной почты
-	confirmLink := c.cfg.Host + ":" + c.cfg.Port + "/confirm-email?token=" + confirmToken
+	confirmLink := c.cfg.Host + ":" + c.cfg.Port + "/confirm-email?t=" + confirmToken
+
+	log.Printf("Sending confirm email link to '%s'...\n", user.Email)
 
 	const subject = "Подтверждение электронной почты"
 	body := fmt.Sprintf("Пожалуйста, подтвердите свою электронную почту, перейдя по ссылке:\n%s\n\nЕсли вы не запрашивали это письмо, проигнорируйте его.", confirmLink)
@@ -82,13 +81,14 @@ func (c *UsersController) AddUser(w http.ResponseWriter, r *http.Request) {
 		subject,
 		body,
 		user.Email)
+	w.Write([]byte(confirmToken))
 }
 
 // ConfirmEmail является эндпоинтом, на который пользователь попадёт, подтверждая электронную почту.
 //
-// Обрабатывает GET запросы по пути '/confirm-email?{token}'.
+// Обрабатывает GET запросы по пути '/confirm-email'.
 func (c *UsersController) ConfirmEmail(w http.ResponseWriter, r *http.Request) {
-	token := r.URL.Query().Get("token")
+	token := r.URL.Query().Get("t")
 	if !c.unverifiedUsersRepo.TokenExists(token) {
 		http.Error(w, "Недействительный токен", http.StatusForbidden)
 		return
@@ -113,9 +113,9 @@ func (c *UsersController) ConfirmEmail(w http.ResponseWriter, r *http.Request) {
 
 // SignUser подписывает пользователя с указанным email на рассылку писем.
 //
-// Обрабатывает PATCH запросы по пути '/sign-user?{email}&{sign}'.
+// Обрабатывает PATCH запросы по пути '/sign-user'.
 func (c *UsersController) SignUser(w http.ResponseWriter, r *http.Request) {
-	usrEmail := r.URL.Query().Get("email")
+	usrEmail := r.URL.Query().Get("email") // TODO: достать email из jwt токена
 	sign, err := strconv.ParseBool(r.URL.Query().Get("sign"))
 	if err != nil {
 		http.Error(w, "Параметр sign: неправильное значение", http.StatusBadRequest)
@@ -128,9 +128,14 @@ func (c *UsersController) SignUser(w http.ResponseWriter, r *http.Request) {
 //
 // Обрабатывает POST запросы по пути '/user-auth'.
 func (C *UsersController) AuthUser(w http.ResponseWriter, r *http.Request) {
-	// Получить эл. почту и пароль
-
-	// Проверить, что они корректны. Если не корректны, вернуть код 403.
-
-	// Создать jwt и вернуть его
+	// email := r.Body.Get("email")
+	// pwd := r.Body.Get("password")
+	//
+	// if emailExists(email) -> http.Error(403)
+	//
+	// jwtHeaders := { alg: "sha256" }
+	// jwtPayload := { email }
+	// jwt := NewJwt(jwtHeaders, jwtPayload)
+	//
+	// w.Write(jwt)
 }

@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"log"
 	"net/smtp"
-
-	"github.com/artemwebber1/friendly_reminder/internal/repository"
 )
 
 // Sender отправляет электронное письмо на указанный адрес.
@@ -20,20 +18,15 @@ type defaultSender struct {
 	host     string
 	port     string
 	auth     smtp.Auth
-
-	usersRepo repository.UsersRepository
-	tasksRepo repository.TasksRepository
 }
 
-func NewSender(from, password, host, port string, ur repository.UsersRepository, tr repository.TasksRepository) Sender {
+func NewSender(from, password, host, port string) Sender {
 	return &defaultSender{
-		from:      from,
-		password:  password,
-		host:      host,
-		port:      port,
-		auth:      smtp.PlainAuth("", from, password, host),
-		usersRepo: ur,
-		tasksRepo: tr,
+		from:     from,
+		password: password,
+		host:     host,
+		port:     port,
+		auth:     smtp.PlainAuth("", from, password, host),
 	}
 }
 

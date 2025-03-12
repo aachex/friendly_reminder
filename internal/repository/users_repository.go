@@ -10,6 +10,9 @@ type UsersRepository interface {
 	// Возвращает id нового пользователя и ошибку.
 	AddUser(email, password string) (int64, error)
 
+	// DeleteUser удаляет пользователя из базы данных.
+	DeleteUser(email string) error
+
 	// MakeSigned подписывает пользователя на рассылку электронных писем.
 	MakeSigned(email string, sign bool) error
 
@@ -43,6 +46,12 @@ func (r *usersRepository) AddUser(email, password string) (id int64, err error) 
 		return -1, err
 	}
 	return id, err
+}
+
+// DeleteUser удаляет пользователя из базы данных.
+func (r *usersRepository) DeleteUser(email string) error {
+	_, err := r.db.Exec("DELETE FROM users WHERE email = $1", email)
+	return err
 }
 
 // MakeSigned подписывает (или отписывает) пользователя на рассылку электронных писем.

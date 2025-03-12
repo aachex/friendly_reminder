@@ -1,7 +1,6 @@
 package test
 
 import (
-	"database/sql"
 	"testing"
 
 	"github.com/artemwebber1/friendly_reminder/internal/models"
@@ -9,22 +8,14 @@ import (
 )
 
 func TestGetList(t *testing.T) {
-	db, err := sql.Open("sqlite3", `D:\projects\golang\Web\friendly_reminder\db\database.db`)
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer func(db *sql.DB) {
-		if err = cleanDb(db); err != nil {
-			t.Fatal(err)
-		}
-		db.Close()
-	}(db)
+	db := openDb(t)
+	defer cleanDb(db, t)
 
 	// Создаём пользователя
 	repo := repository.NewUsersRepository(db)
 	const email = "abcde@gmail.com"
 	const passwordHash = "hashedPassword"
-	_, err = repo.AddUser(email, passwordHash)
+	_, err := repo.AddUser(email, passwordHash)
 
 	if err != nil {
 		t.Fatal(err)
@@ -64,18 +55,10 @@ func TestGetList(t *testing.T) {
 
 // Здесь тестируем обновление списка для несуществующего пользователя - должна возникнуть ошибка FOREIGN KEY constraint failed.
 func TestAddTask_InvalidEmail(t *testing.T) {
-	db, err := sql.Open("sqlite3", `D:\projects\golang\Web\friendly_reminder\db\database.db`)
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer func(db *sql.DB) {
-		if err = cleanDb(db); err != nil {
-			t.Fatal(err)
-		}
-		db.Close()
-	}(db)
+	db := openDb(t)
+	defer cleanDb(db, t)
 
-	_, err = db.Exec("PRAGMA FOREIGN_KEYS=ON")
+	_, err := db.Exec("PRAGMA FOREIGN_KEYS=ON")
 	if err != nil {
 		t.Fatal(err)
 	}
