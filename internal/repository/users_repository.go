@@ -21,6 +21,8 @@ type UsersRepository interface {
 
 	// EmailExists возвращает true если пользователь с данной электронной почтой уже существует.
 	EmailExists(email string) bool
+
+	UserExists(email, password string) bool
 }
 
 type usersRepository struct {
@@ -83,5 +85,10 @@ func (r *usersRepository) GetEmails() (emails []string, err error) {
 // EmailExists возвращает true если пользователь с данной электронной почтой уже существует.
 func (r *usersRepository) EmailExists(email string) bool {
 	row := r.db.QueryRow("SELECT email FROM users WHERE email = $1", email)
+	return row.Scan() != sql.ErrNoRows
+}
+
+func (r *usersRepository) UserExists(email, password string) bool {
+	row := r.db.QueryRow("SELECT email, password FROM users WHERE email = $1 AND password = $2", email, password)
 	return row.Scan() != sql.ErrNoRows
 }

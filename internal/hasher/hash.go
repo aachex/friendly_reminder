@@ -2,8 +2,8 @@ package hasher
 
 import "crypto/sha256"
 
-func Hash(data []byte) string {
+func Hash(data string) string {
 	h := sha256.New()
-	h.Write(data)
+	h.Write([]byte(data))
 	return string(h.Sum(nil))
 }
