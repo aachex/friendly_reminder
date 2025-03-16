@@ -5,9 +5,19 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"net/http"
+	"os"
 
 	"github.com/golang-jwt/jwt/v5"
 )
+
+var (
+	errInvalidToken        = errors.New("invalid token")
+	errInvalidTokenSubject = errors.New("invalid field 'sub' in token claims")
+	errReadingBody         = errors.New("error reading request body")
+)
+
+var key = []byte(os.Getenv("SECRET_STR"))
 
 func readBody[T any](body io.ReadCloser) (*T, error) {
 	bodyBytes, err := io.ReadAll(body)
@@ -22,7 +32,7 @@ func readBody[T any](body io.ReadCloser) (*T, error) {
 	return &t, nil
 }
 
-func readJWT(rawTok string, key []byte) (jwt.MapClaims, error) {
+func readJWT(rawTok string) (jwt.MapClaims, error) {
 	tok, err := jwt.Parse(rawTok, func(t *jwt.Token) (interface{}, error) {
 		_, ok := t.Method.(*jwt.SigningMethodHMAC)
 		if !ok {
@@ -39,4 +49,12 @@ func readJWT(rawTok string, key []byte) (jwt.MapClaims, error) {
 		return claims, nil
 	}
 	return nil, errors.New("invalid jwt claims")
+}
+
+func getRawJwtFromHeader(h http.Header) string {
+	rawTok := h.Get("Authorization")
+	if len(rawTok) > 7 {
+		return rawTok[7:] // Отрезаем часть 'Bearer '
+	}
+	return ""
 }

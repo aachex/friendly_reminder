@@ -9,10 +9,7 @@ import (
 
 	"github.com/artemwebber1/friendly_reminder/internal/hasher"
 	"github.com/artemwebber1/friendly_reminder/internal/repository"
-	"github.com/artemwebber1/friendly_reminder/pkg/middleware"
 )
-
-var addr = cfg.Host + ":" + cfg.Port
 
 func TestSendConfirmEmailLink(t *testing.T) {
 	db := openDb(t)
@@ -66,6 +63,7 @@ func TestConfirmEmail(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	resRec = httptest.NewRecorder()
 	usersCtrl.ConfirmEmail(resRec, req)
 
 	if uur.TokenExists(tok) {
@@ -77,17 +75,41 @@ func TestSignUser_Unauthorized(t *testing.T) {
 	db := openDb(t)
 	defer cleanDb(db, t)
 
-	usersCtrl := getUsersController(db)
-
 	resRec := httptest.NewRecorder()
-	req, err := http.NewRequest(http.MethodPatch, addr+"/sign-user", nil)
+	req, err := http.NewRequest(http.MethodPatch, addr+"/sign-user?sign=true", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	middleware.RequireAuthorization(usersCtrl.SignUser)(resRec, req)
-	if resRec.Result().StatusCode != http.StatusForbidden && resRec.Result().StatusCode != http.StatusUnauthorized {
-		t.Fatalf("Wanted status code %d or %d, got: %d.", http.StatusForbidden, http.StatusUnauthorized, resRec.Result().StatusCode)
+	usersCtrl := getUsersController(db)
+	usersCtrl.SignUser(resRec, req)
+	if resRec.Result().StatusCode != http.StatusForbidden {
+		t.Fatalf("Wanted status code %d, got: %d.", http.StatusForbidden, resRec.Result().StatusCode)
+	}
+}
+
+func TestSignUser(t *testing.T) {
+	db := openDb(t)
+	defer cleanDb(db, t)
+
+	usersCtrl := getUsersController(db)
+
+	// Сначала регистрируем пользователя для получения токена авторизации
+	usersRepo := repository.NewUsersRepository(db)
+	usersRepo.AddUser(mock.email, hasher.Hash(mock.pwd))
+
+	tok := getJwt(t, usersCtrl)
+
+	req, err := http.NewRequest(http.MethodPatch, addr+"/sign-user?sign=true", nil)
+	req.Header.Add("Authorization", "Bearer "+tok)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	resRec := httptest.NewRecorder()
+	usersCtrl.SignUser(resRec, req)
+	if resRec.Result().StatusCode != http.StatusOK {
+		t.Fatalf("Wanted status code %d, got %d.\nResponse body: %s", http.StatusOK, resRec.Result().StatusCode, resRec.Body)
 	}
 }
 

@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"os"
 	"strconv"
 	"time"
 
@@ -51,7 +50,7 @@ func (c *UsersController) AddEndpoints(mux *http.ServeMux) {
 func (c *UsersController) SendConfirmEmailLink(w http.ResponseWriter, r *http.Request) {
 	user, err := readBody[models.User](r.Body)
 	if err != nil {
-		http.Error(w, "Error reading request body", http.StatusBadRequest)
+		http.Error(w, errReadingBody.Error(), http.StatusBadRequest)
 	}
 
 	if c.usersRepo.EmailExists(user.Email) {
@@ -93,20 +92,20 @@ func (c *UsersController) SendConfirmEmailLink(w http.ResponseWriter, r *http.Re
 func (c *UsersController) ConfirmEmail(w http.ResponseWriter, r *http.Request) {
 	token := r.URL.Query().Get("t")
 	if !c.unverifiedUsersRepo.TokenExists(token) {
-		http.Error(w, "Invalid confirm token", http.StatusForbidden)
+		http.Error(w, "invalid confirm token", http.StatusForbidden)
 		return
 	}
 
 	user, err := c.unverifiedUsersRepo.GetUserByToken(token)
 	if err != nil {
-		http.Error(w, "Impossible to confirm email: undefined user", http.StatusInternalServerError)
+		http.Error(w, "impossible to confirm email: undefined user", http.StatusInternalServerError)
 		return
 	}
 
 	w.Write([]byte("Почта подтверждена"))
 	err = c.unverifiedUsersRepo.DeleteToken(token)
 	if err != nil {
-		http.Error(w, "Failed to delete confirm token", http.StatusForbidden)
+		http.Error(w, "failed to delete confirm token", http.StatusForbidden)
 		return
 	}
 
@@ -115,32 +114,26 @@ func (c *UsersController) ConfirmEmail(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 }
 
-var key = []byte(os.Getenv("SECRET_STR"))
-
 // SignUser подписывает пользователя с указанным email на рассылку писем.
 //
 // Обрабатывает PATCH запросы по пути '/sign-user'.
 func (c *UsersController) SignUser(w http.ResponseWriter, r *http.Request) {
-	rawTok := r.Header.Get("Authorization")
-	if len(rawTok) > 7 {
-		rawTok = rawTok[7:] // Отрезаем часть "Bearer: "
-	}
-
-	jwtClaims, err := readJWT(rawTok, key)
+	rawTok := getRawJwtFromHeader(r.Header)
+	jwtClaims, err := readJWT(rawTok)
 	if err != nil {
-		http.Error(w, "Invalid token", http.StatusForbidden)
+		http.Error(w, err.Error(), http.StatusForbidden)
 		return
 	}
 
 	userEmail, err := jwtClaims.GetSubject()
 	if err != nil {
-		http.Error(w, "Invalid field 'sub' in token claims", http.StatusForbidden)
+		http.Error(w, errInvalidTokenSubject.Error(), http.StatusForbidden)
 		return
 	}
 
 	sign, err := strconv.ParseBool(r.URL.Query().Get("sign"))
 	if err != nil {
-		http.Error(w, "Invalid value for 'sign' param", http.StatusBadRequest)
+		http.Error(w, "invalid value for 'sign' param", http.StatusBadRequest)
 		return
 	}
 	c.usersRepo.MakeSigned(userEmail, sign)
@@ -152,12 +145,12 @@ func (c *UsersController) SignUser(w http.ResponseWriter, r *http.Request) {
 func (c *UsersController) Login(w http.ResponseWriter, r *http.Request) {
 	user, err := readBody[models.User](r.Body)
 	if err != nil {
-		http.Error(w, "Error reading request body", http.StatusBadRequest)
+		http.Error(w, errReadingBody.Error(), http.StatusBadRequest)
 		return
 	}
 
 	if !c.usersRepo.UserExists(user.Email, hasher.Hash(user.Password)) {
-		http.Error(w, "Invalid email or password", http.StatusForbidden)
+		http.Error(w, "invalid email or password", http.StatusForbidden)
 		return
 	}
 
@@ -170,7 +163,7 @@ func (c *UsersController) Login(w http.ResponseWriter, r *http.Request) {
 	tok := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	tokStr, err := tok.SignedString(key)
 	if err != nil {
-		http.Error(w, "Error signing token", http.StatusBadRequest)
+		http.Error(w, "failed to sign token", http.StatusBadRequest)
 		return
 	}
 
