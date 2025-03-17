@@ -10,12 +10,19 @@ import (
 
 	"github.com/artemwebber1/friendly_reminder/internal/config"
 	"github.com/artemwebber1/friendly_reminder/internal/controller"
-	"github.com/artemwebber1/friendly_reminder/internal/emailsender"
+	"github.com/artemwebber1/friendly_reminder/internal/reminder"
 	"github.com/artemwebber1/friendly_reminder/internal/repository"
+	"github.com/artemwebber1/friendly_reminder/pkg/email"
+	"github.com/joho/godotenv"
 	_ "github.com/mattn/go-sqlite3" // sqlite3 driver
 )
 
 func main() {
+	// Загрузка переменных окружения
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Failed to load .env file")
+	}
 	config := config.NewConfig(`config\config.json`)
 
 	// Подключение к бд
@@ -25,6 +32,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	db.Exec("PRAGMA FOREIGN_KEYS=ON")
 	defer db.Close()
 
 	// Инициализация логгера
@@ -36,21 +44,30 @@ func main() {
 	log.SetOutput(logFile)
 
 	// Инициализация контроллеров и репозиториев
-	usersRepository := repository.NewUsersRepository(db)
-	itemsRepository := repository.NewItemsRepository(db)
+	usersRepo := repository.NewUsersRepository(db)
+	tasksRepo := repository.NewTasksRepository(db)
+	unverifiedUsersRepo := repository.NewUnverifiedUsersRepository(db)
 
-	usersController := controller.NewUsersController(usersRepository)
+	emailSender := email.NewSender(
+		os.Getenv("EMAIL"),
+		os.Getenv("EMAIL_PASSWORD"),
+		config.EmailOptions.Host,
+		config.EmailOptions.Port)
 
-	// Добавление эндпоинтов
+	// Создание контроллеров и добавление эндпоинтов
 	mux := http.NewServeMux()
+	usersController := controller.NewUsersController(usersRepo, unverifiedUsersRepo, emailSender, config)
+	tasksController := controller.NewTasksController(tasksRepo)
+
 	usersController.AddEndpoints(mux)
+	tasksController.AddEndpoints(mux)
 
 	// Запуск рассыльщика
-	emailSender := emailsender.New(config.Email, config.EmailPassword, config.EmailHost, config.EmailPort, usersRepository, itemsRepository)
-	emailSender.StartMailing(60 * time.Second)
+	listSender := reminder.New(emailSender, usersRepo, tasksRepo)
+	go listSender.StartSending(config.ListSenderOptions.DelayInSeconds * time.Second)
 
 	// Запуск сервера
-	address := fmt.Sprintf(":%d", config.Port)
-	fmt.Println("Listening:", config.Port)
-	log.Fatal(http.ListenAndServe(address, mux))
+	addr := config.Host + ":" + config.Port
+	fmt.Println("Listening:", addr)
+	log.Fatal(http.ListenAndServe(":"+config.Port, mux))
 }

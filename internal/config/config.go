@@ -3,14 +3,19 @@ package config
 import (
 	"encoding/json"
 	"os"
+	"time"
 )
 
 type Config struct {
-	Port          int    `json:"port"`
-	Email         string `json:"email"`
-	EmailPassword string `json:"emailPassword"`
-	EmailHost     string `json:"emailHost"`
-	EmailPort     int    `json:"emailPort"`
+	Host         string `json:"host"`
+	Port         string `json:"port"`
+	EmailOptions struct {
+		Host string `json:"emailHost"`
+		Port string `json:"emailPort"`
+	} `json:"emailOptions"`
+	ListSenderOptions struct {
+		DelayInSeconds time.Duration `json:"delayInSeconds"`
+	} `json:"listSenderOptions"`
 }
 
 func NewConfig(path string) *Config {

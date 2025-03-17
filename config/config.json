@@ -1,7 +1,11 @@
 {
-    "port": 8080,
-    "email": "chekhonin.artem@gmail.com",
-    "emailPassword": "qqyyrfheofcklxzd",
-    "emailHost": "smtp.gmail.com",
-    "emailPort": 587
+    "host": "http://localhost",
+    "port": "8080",
+    "emailOptions": {
+        "emailHost": "smtp.gmail.com",
+        "emailPort": "587"
+    },
+    "listSenderOptions": {
+        "delayInSeconds": 300
+    }
 }

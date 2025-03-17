@@ -8,16 +8,21 @@ type UsersRepository interface {
 	// AddUser добавляет нового пользователя.
 	//
 	// Возвращает id нового пользователя и ошибку.
-	AddUser(email, passwordHash string) (int64, error)
+	AddUser(email, password string) (int64, error)
 
-	// MakeSigned подписывает пользователя на рассылку электронных писем.
-	MakeSigned(email string, signed bool) error
+	// DeleteUser удаляет пользователя из базы данных.
+	DeleteUser(email string) error
+
+	// Subscribe подписывает пользователя на рассылку электронных писем.
+	Subscribe(email string, subscr bool) error
 
 	// GetEmails возвращает список зарегестрированных электронных почт.
 	GetEmails() ([]string, error)
 
 	// EmailExists возвращает true если пользователь с данной электронной почтой уже существует.
 	EmailExists(email string) bool
+
+	UserExists(email, password string) bool
 }
 
 type usersRepository struct {
@@ -33,8 +38,8 @@ func NewUsersRepository(db *sql.DB) UsersRepository {
 // AddUser добавляет нового пользователя.
 //
 // Возвращает id нового пользователя и ошибку.
-func (r *usersRepository) AddUser(email, passwordHash string) (id int64, err error) {
-	res, err := r.db.Exec("INSERT INTO Users(email, password) VALUES($1, $2)", email, passwordHash)
+func (r *usersRepository) AddUser(email, password string) (id int64, err error) {
+	res, err := r.db.Exec("INSERT INTO users(email, password) VALUES($1, $2)", email, password)
 	if err != nil {
 		return -1, err
 	}
@@ -45,15 +50,21 @@ func (r *usersRepository) AddUser(email, passwordHash string) (id int64, err err
 	return id, err
 }
 
-// MakeSigned подписывает (или отписывает) пользователя на рассылку электронных писем.
-func (r *usersRepository) MakeSigned(email string, signed bool) error {
-	_, err := r.db.Exec("UPDATE Users SET signed = $1 WHERE email = $2", signed, email)
+// DeleteUser удаляет пользователя из базы данных.
+func (r *usersRepository) DeleteUser(email string) error {
+	_, err := r.db.Exec("DELETE FROM users WHERE email = $1", email)
+	return err
+}
+
+// Subscribe подписывает пользователя на рассылку электронных писем.
+func (r *usersRepository) Subscribe(email string, subscr bool) error {
+	_, err := r.db.Exec("UPDATE users SET subscribed = $1 WHERE email = $2", subscr, email)
 	return err
 }
 
 // GetEmails возвращает список зарегестрированных электронных почт пользователей, подписанных на рассылку.
 func (r *usersRepository) GetEmails() (emails []string, err error) {
-	rows, err := r.db.Query("SELECT email FROM Users WHERE signed = 1;")
+	rows, err := r.db.Query("SELECT email FROM users WHERE subscribed = 1")
 	if err != nil {
 		return nil, err
 	}
@@ -73,6 +84,11 @@ func (r *usersRepository) GetEmails() (emails []string, err error) {
 
 // EmailExists возвращает true если пользователь с данной электронной почтой уже существует.
 func (r *usersRepository) EmailExists(email string) bool {
-	row := r.db.QueryRow("SELECT email FROM Users WHERE email = $1", email)
+	row := r.db.QueryRow("SELECT email FROM users WHERE email = $1", email)
+	return row.Scan() != sql.ErrNoRows
+}
+
+func (r *usersRepository) UserExists(email, password string) bool {
+	row := r.db.QueryRow("SELECT email, password FROM users WHERE email = $1 AND password = $2", email, password)
 	return row.Scan() != sql.ErrNoRows
 }
