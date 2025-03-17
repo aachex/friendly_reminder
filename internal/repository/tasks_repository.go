@@ -7,7 +7,7 @@ import (
 )
 
 type TasksRepository interface {
-	// AddItem добавляет новую задачу в список пользователя. Возвращает id созданноё задачи.
+	// AddItem добавляет новую задачу в список пользователя. Возвращает id созданной задачи.
 	AddTask(value, userEmail string) (int64, error)
 
 	// DeleteTask удаляет задачу по указанному id.
@@ -16,7 +16,7 @@ type TasksRepository interface {
 	// GetList возвращает список дел пользователя с указанным email.
 	GetList(userEmail string) ([]models.Task, error)
 
-	// ClearList удаляет все дела из списка пользователя.
+	// ClearList очищает список указанного пользователя.
 	ClearList(userEmail string) error
 }
 
@@ -68,6 +68,7 @@ func (r *tasksRepository) GetList(userEmail string) ([]models.Task, error) {
 	return tasks, nil
 }
 
+// ClearList очищает список указанного пользователя.
 func (r *tasksRepository) ClearList(userEmail string) error {
 	_, err := r.db.Exec("DELETE FROM tasks WHERE user_email = $1", userEmail)
 	return err

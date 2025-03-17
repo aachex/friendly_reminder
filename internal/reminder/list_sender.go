@@ -9,15 +9,22 @@ import (
 	"github.com/artemwebber1/friendly_reminder/pkg/email"
 )
 
-// ListSender отправляет списки дел пользователям, используя интерфейс [email.Sender].
-type ListSender struct {
-	sender    email.Sender
+// Reminder представляет собой некий объект, который в отдельной горутине
+// присылает уведомления пользователям, подписанным на рассылку.
+type Reminder interface {
+	// StartSending в достаёт из базы данных электронные почты всех пользователей,
+	// подписанных на рассылку, и отправляет им их списки дел c указанным интервалом.
+	StartSending(d time.Duration)
+}
+
+type defaultReminder struct {
+	sender    email.Sender // Для отправки электронных писем
 	usersRepo repository.UsersRepository
 	tasksRepo repository.TasksRepository
 }
 
-func New(s email.Sender, ur repository.UsersRepository, tr repository.TasksRepository) *ListSender {
-	return &ListSender{
+func New(s email.Sender, ur repository.UsersRepository, tr repository.TasksRepository) Reminder {
+	return &defaultReminder{
 		sender:    s,
 		usersRepo: ur,
 		tasksRepo: tr,
@@ -26,7 +33,7 @@ func New(s email.Sender, ur repository.UsersRepository, tr repository.TasksRepos
 
 // StartSending в достаёт из базы данных электронные почты всех пользователей,
 // подписанных на рассылку, и отправляет им их списки дел c указанным интервалом.
-func (s *ListSender) StartSending(d time.Duration) {
+func (s *defaultReminder) StartSending(d time.Duration) {
 	for {
 		log.Println("Sending emails")
 		emails, err := s.usersRepo.GetEmails()
@@ -42,7 +49,7 @@ func (s *ListSender) StartSending(d time.Duration) {
 	}
 }
 
-func (s *ListSender) sendList(email string) {
+func (s *defaultReminder) sendList(email string) {
 	// Получаем список пользователя
 	list, err := s.tasksRepo.GetList(email)
 	if err != nil {
@@ -60,7 +67,8 @@ func (s *ListSender) sendList(email string) {
 
 	subject := "Your to-do list"
 	if len(list) == 0 {
-		// Отписываем пользователя от рассылки, если его список пуст, и информируем его об этом.
+		// Отписываем пользователя от рассылки, если его список пуст.
+		// Меняем заголовок и тело письма, чтобы уведомить пользователя об этом.
 		subject = "You were unsubscribed from the mailing."
 		body = "Your to-do list is empty. Add new tasks to your list and subscribe to the mailing."
 		s.usersRepo.Subscribe(email, false) // Отписка от рассылки

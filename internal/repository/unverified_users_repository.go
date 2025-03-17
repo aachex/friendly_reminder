@@ -8,6 +8,10 @@ import (
 	"github.com/artemwebber1/friendly_reminder/internal/models"
 )
 
+// UnverifiedUsersRepository является репозиторием неверифицированных пользователей.
+//
+// Неверифицированный пользователь - это пользователь, который
+// регистрировался в системе, но не подтвердил электронную почту.
 type UnverifiedUsersRepository interface {
 	// TokenExists возвращает true если существует указанный токен для подтверждения электронной почты.
 	TokenExists(t string) bool

@@ -3,11 +3,10 @@ package email
 import (
 	"encoding/base64"
 	"fmt"
-	"log"
 	"net/smtp"
 )
 
-// Sender отправляет электронное письмо на указанный адрес.
+// Sender позволяет отправлять электронные письма с конкретного адреса.
 type Sender interface {
 	Send(subject, body, to string) error
 }
@@ -49,8 +48,6 @@ func (s *defaultSender) Send(subject, body, to string) error {
 		[]string{to},
 		msg,
 	)
-
-	log.Printf("Sent email from '%s' to '%s'\n", s.from, to)
 
 	return err
 }
