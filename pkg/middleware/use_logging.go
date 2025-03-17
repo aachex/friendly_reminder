@@ -19,8 +19,8 @@ func newLoggingResponseWriter(w http.ResponseWriter) *loggingResponseWriter {
 }
 
 func (w *loggingResponseWriter) WriteHeader(statusCode int) {
-	w.ResponseWriter.WriteHeader(statusCode)
 	w.statusCode = statusCode
+	w.ResponseWriter.WriteHeader(statusCode)
 }
 
 func (w *loggingResponseWriter) Write(data []byte) (int, error) {

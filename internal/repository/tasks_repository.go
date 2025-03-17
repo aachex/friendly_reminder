@@ -15,6 +15,9 @@ type TasksRepository interface {
 
 	// GetList возвращает список дел пользователя с указанным email.
 	GetList(userEmail string) ([]models.Task, error)
+
+	// ClearList удаляет все дела из списка пользователя.
+	ClearList(userEmail string) error
 }
 
 type tasksRepository struct {
@@ -52,10 +55,10 @@ func (r *tasksRepository) DeleteTask(id int64) error {
 func (r *tasksRepository) GetList(userEmail string) ([]models.Task, error) {
 	rows, err := r.db.Query("SELECT * FROM tasks WHERE user_email = $1", userEmail)
 	if err != nil {
-		return nil, err
+		return []models.Task{}, err
 	}
 
-	var tasks []models.Task
+	tasks := make([]models.Task, 0)
 	var task models.Task
 	for rows.Next() {
 		rows.Scan(&task.Id, &task.UserEmail, &task.Value)
@@ -63,4 +66,9 @@ func (r *tasksRepository) GetList(userEmail string) ([]models.Task, error) {
 	}
 
 	return tasks, nil
+}
+
+func (r *tasksRepository) ClearList(userEmail string) error {
+	_, err := r.db.Exec("DELETE FROM tasks WHERE user_email = $1", userEmail)
+	return err
 }

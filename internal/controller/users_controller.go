@@ -40,19 +40,23 @@ func NewUsersController(
 func (c *UsersController) AddEndpoints(mux *http.ServeMux) {
 	mux.HandleFunc(
 		"POST /new-user",
-		mw.UseLogging(c.SendConfirmEmailLink))
+		mw.UseLogging(c.SendConfirmEmailLink),
+	)
 
 	mux.HandleFunc(
 		"POST /login",
-		mw.UseLogging(c.Login))
+		mw.UseLogging(c.Login),
+	)
 
 	mux.HandleFunc(
 		"GET /confirm-email",
-		mw.UseLogging(c.ConfirmEmail))
+		mw.UseLogging(c.ConfirmEmail),
+	)
 
 	mux.HandleFunc(
 		"PATCH /subscribe",
-		mw.UseLogging(c.SubscribeUser))
+		mw.UseLogging(c.SubscribeUser),
+	)
 }
 
 // AddUser создаёт нового пользователя в базе данных.
@@ -115,16 +119,17 @@ func (c *UsersController) ConfirmEmail(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Write([]byte("Email confirmed succesfully"))
 	err = c.unverifiedUsersRepo.DeleteToken(token)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("failed to delete confirm token: %s", err), http.StatusForbidden)
 		return
 	}
 
+	w.WriteHeader(http.StatusCreated)
+	w.Write([]byte("Email confirmed succesfully"))
+
 	// Пользователь успешно подтвердил электронную почту, добавляем его в базу данных
 	c.usersRepo.AddUser(user.Email, user.Password)
-	w.WriteHeader(http.StatusCreated)
 }
 
 // SubscribeUser подписывает пользователя с указанным email на рассылку писем.

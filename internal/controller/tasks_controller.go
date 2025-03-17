@@ -21,15 +21,23 @@ func NewTasksController(tr repository.TasksRepository) *TasksController {
 func (c *TasksController) AddEndpoints(mux *http.ServeMux) {
 	mux.HandleFunc(
 		"POST /new-task",
-		mw.UseLogging(mw.UseAuthorization(c.CreateTask)))
+		mw.UseLogging(mw.UseAuthorization(c.CreateTask)),
+	)
 
 	mux.HandleFunc(
 		"GET /list",
-		mw.UseAuthorization(c.GetList))
+		mw.UseLogging(mw.UseAuthorization(c.GetList)),
+	)
+
+	mux.HandleFunc(
+		"DELETE /clear-list",
+		mw.UseLogging(mw.UseAuthorization(c.ClearList)),
+	)
 
 	mux.HandleFunc(
 		"DELETE /del-task",
-		mw.UseLogging(mw.UseAuthorization(c.DeleteTask)))
+		mw.UseLogging(mw.UseAuthorization(c.DeleteTask)),
+	)
 }
 
 // CreateTask создаёт новую задачу в списке пользователя.
@@ -93,6 +101,23 @@ func (c *TasksController) GetList(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writeJson(w, &list)
+}
+
+func (c *TasksController) ClearList(w http.ResponseWriter, r *http.Request) {
+	rawJwt := getRawJwtFromHeader(r.Header)
+	jwtClaims, err := readJWT(rawJwt)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusForbidden)
+		return
+	}
+
+	email, err := jwtClaims.GetSubject()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusForbidden)
+		return
+	}
+
+	c.tasksRepo.ClearList(email)
 }
 
 // DeleteTask удаляет задачу из списка пользователя.
