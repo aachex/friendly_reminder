@@ -13,8 +13,8 @@ type UsersRepository interface {
 	// DeleteUser удаляет пользователя из базы данных.
 	DeleteUser(email string) error
 
-	// MakeSigned подписывает пользователя на рассылку электронных писем.
-	MakeSigned(email string, sign bool) error
+	// Subscribe подписывает пользователя на рассылку электронных писем.
+	Subscribe(email string, subscr bool) error
 
 	// GetEmails возвращает список зарегестрированных электронных почт.
 	GetEmails() ([]string, error)
@@ -56,15 +56,15 @@ func (r *usersRepository) DeleteUser(email string) error {
 	return err
 }
 
-// MakeSigned подписывает (или отписывает) пользователя на рассылку электронных писем.
-func (r *usersRepository) MakeSigned(email string, sign bool) error {
-	_, err := r.db.Exec("UPDATE users SET signed = $1 WHERE email = $2", sign, email)
+// Subscribe подписывает пользователя на рассылку электронных писем.
+func (r *usersRepository) Subscribe(email string, subscr bool) error {
+	_, err := r.db.Exec("UPDATE users SET subscribed = $1 WHERE email = $2", subscr, email)
 	return err
 }
 
 // GetEmails возвращает список зарегестрированных электронных почт пользователей, подписанных на рассылку.
 func (r *usersRepository) GetEmails() (emails []string, err error) {
-	rows, err := r.db.Query("SELECT email FROM users WHERE signed = 1;")
+	rows, err := r.db.Query("SELECT email FROM users WHERE subscribed = 1")
 	if err != nil {
 		return nil, err
 	}

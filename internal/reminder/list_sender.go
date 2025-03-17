@@ -58,12 +58,12 @@ func (s *ListSender) sendList(email string) {
 		listStr += fmt.Sprintf("\n%d. %s", i+1, item.Value)
 	}
 
-	subject := "Ваш список дел"
+	subject := "Your to-do list"
 	if len(list) == 0 {
 		// Отписываем пользователя от рассылки, если его список пуст, и информируем его об этом.
-		subject = "Вы были отписаны от рассылки"
-		listStr = "Ваш список дел пуст. Вы будете отписаны от рассылки, пока не добавите новые дела и не подпишетесь на рассылку снова."
-		s.usersRepo.MakeSigned(email, false) // Отписка от рассылки
+		subject = "You were unsubscribed from the mailing."
+		listStr = "Your to-do list is empty. Add new tasks to your list and subscribe to the mailing."
+		s.usersRepo.Subscribe(email, false) // Отписка от рассылки
 	}
 
 	if err = s.sender.Send(subject, listStr, email); err != nil {

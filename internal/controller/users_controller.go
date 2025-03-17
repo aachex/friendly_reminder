@@ -51,8 +51,8 @@ func (c *UsersController) AddEndpoints(mux *http.ServeMux) {
 		c.ConfirmEmail)
 
 	mux.HandleFunc(
-		"PATCH /sign-user",
-		mw.UseAuthorization(c.SignUser))
+		"PATCH /subscribe",
+		mw.UseAuthorization(c.SubscribeUser))
 }
 
 // AddUser создаёт нового пользователя в базе данных.
@@ -127,10 +127,10 @@ func (c *UsersController) ConfirmEmail(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 }
 
-// SignUser подписывает пользователя с указанным email на рассылку писем.
+// SubscribeUser подписывает пользователя с указанным email на рассылку писем.
 //
-// Обрабатывает PATCH запросы по пути '/sign-user'.
-func (c *UsersController) SignUser(w http.ResponseWriter, r *http.Request) {
+// Обрабатывает PATCH запросы по пути '/subscribe'.
+func (c *UsersController) SubscribeUser(w http.ResponseWriter, r *http.Request) {
 	rawJwt := getRawJwtFromHeader(r.Header)
 	jwtClaims, err := readJWT(rawJwt)
 	if err != nil {
@@ -144,12 +144,12 @@ func (c *UsersController) SignUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	sign, err := strconv.ParseBool(r.URL.Query().Get("sign"))
+	subscribe, err := strconv.ParseBool(r.URL.Query().Get("subscribe"))
 	if err != nil {
-		http.Error(w, "invalid value for 'sign' param", http.StatusBadRequest)
+		http.Error(w, "invalid value for 'subscribe' param", http.StatusBadRequest)
 		return
 	}
-	c.usersRepo.MakeSigned(userEmail, sign)
+	c.usersRepo.Subscribe(userEmail, subscribe)
 }
 
 // Login осуществляет вход уже существующего пользователя в систему.

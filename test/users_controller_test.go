@@ -71,24 +71,24 @@ func TestConfirmEmail(t *testing.T) {
 	}
 }
 
-func TestSignUser_Unauthorized(t *testing.T) {
+func TestSubscribeUser_Unauthorized(t *testing.T) {
 	db := openDb(t)
 	defer cleanDb(db, t)
 
 	resRec := httptest.NewRecorder()
-	req, err := http.NewRequest(http.MethodPatch, addr+"/sign-user?sign=true", nil)
+	req, err := http.NewRequest(http.MethodPatch, addr+"/subscribe?subscribe=true", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	usersCtrl := getUsersController(db)
-	usersCtrl.SignUser(resRec, req)
+	usersCtrl.SubscribeUser(resRec, req)
 	if resRec.Result().StatusCode != http.StatusForbidden {
 		t.Fatal(statusCodesMismatch(http.StatusForbidden, resRec.Result().StatusCode, resRec.Body.String()))
 	}
 }
 
-func TestSignUser(t *testing.T) {
+func TestSubscribeUser(t *testing.T) {
 	db := openDb(t)
 	defer cleanDb(db, t)
 
@@ -100,14 +100,14 @@ func TestSignUser(t *testing.T) {
 
 	tok := getJwt(t, usersCtrl)
 
-	req, err := http.NewRequest(http.MethodPatch, addr+"/sign-user?sign=true", nil)
+	req, err := http.NewRequest(http.MethodPatch, addr+"/subscribe?subscribe=true", nil)
 	req.Header.Add("Authorization", "Bearer "+tok)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	resRec := httptest.NewRecorder()
-	usersCtrl.SignUser(resRec, req)
+	usersCtrl.SubscribeUser(resRec, req)
 	if resRec.Result().StatusCode != http.StatusOK {
 		t.Fatal(statusCodesMismatch(http.StatusOK, resRec.Result().StatusCode, resRec.Body.String()))
 	}

@@ -32,7 +32,7 @@ func TestMakeSigned(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = repo.MakeSigned(mock.email, true)
+	err = repo.Subscribe(mock.email, true)
 	if err != nil {
 		t.Fatal(err)
 	}
