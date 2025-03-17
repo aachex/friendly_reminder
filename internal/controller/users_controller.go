@@ -88,8 +88,8 @@ func (c *UsersController) SendConfirmEmailLink(w http.ResponseWriter, r *http.Re
 
 	log.Printf("Sending an email confirmation link to '%s'...\n", user.Email)
 
-	const subject = "Подтверждение электронной почты"
-	body := fmt.Sprintf("Пожалуйста, подтвердите свою электронную почту, перейдя по ссылке:\n%s\n\nЕсли вы не запрашивали это письмо, проигнорируйте его.", confirmLink)
+	const subject = "Email confirmation"
+	body := fmt.Sprintf("Please, confirm your email by clicking on the link:\n%s\n\nIf you didn't request this mail, ignore it.", confirmLink)
 	c.emailSender.Send(
 		subject,
 		body,

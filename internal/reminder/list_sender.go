@@ -53,20 +53,20 @@ func (s *ListSender) sendList(email string) {
 	// 1. Задача 1
 	// 2. Задача 2
 	// ...
-	listStr := ""
+	body := "Here is your to-do list:"
 	for i, item := range list {
-		listStr += fmt.Sprintf("\n%d. %s", i+1, item.Value)
+		body += fmt.Sprintf("\n%d. %s", i+1, item.Value)
 	}
 
 	subject := "Your to-do list"
 	if len(list) == 0 {
 		// Отписываем пользователя от рассылки, если его список пуст, и информируем его об этом.
 		subject = "You were unsubscribed from the mailing."
-		listStr = "Your to-do list is empty. Add new tasks to your list and subscribe to the mailing."
+		body = "Your to-do list is empty. Add new tasks to your list and subscribe to the mailing."
 		s.usersRepo.Subscribe(email, false) // Отписка от рассылки
 	}
 
-	if err = s.sender.Send(subject, listStr, email); err != nil {
+	if err = s.sender.Send(subject, body, email); err != nil {
 		log.Fatal(err)
 	}
 }
