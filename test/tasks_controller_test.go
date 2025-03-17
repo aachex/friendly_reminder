@@ -19,8 +19,7 @@ func TestCreateTask_Unauthorized(t *testing.T) {
 
 	resRec := httptest.NewRecorder()
 
-	body := bytes.NewReader(fmt.Appendf(nil, "{value: \"%s\"}", "smth"))
-	req, err := http.NewRequest(http.MethodPost, addr+"/new-task", body)
+	req, err := http.NewRequest(http.MethodPost, addr+"/new-task", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -53,6 +52,35 @@ func TestCreateTask(t *testing.T) {
 	tasksCtrl.CreateTask(resRec, req)
 
 	if resRec.Result().StatusCode != http.StatusCreated {
-		t.Fatalf("Wanted status code %d, got %d.\nResponse body: %s", http.StatusOK, resRec.Result().StatusCode, resRec.Body)
+		t.Fatal(statusCodesMismatch(http.StatusOK, resRec.Result().StatusCode, resRec.Body.String()))
+	}
+}
+
+func TestDeleteTask(t *testing.T) {
+	db := openDb(t)
+	defer cleanDb(db, t)
+
+	usersRepo := repository.NewUsersRepository(db)
+	usersRepo.AddUser(mock.email, hasher.Hash(mock.pwd))
+
+	tasksRepo := repository.NewTasksRepository(db)
+	id, err := tasksRepo.AddTask("Do homework", mock.email)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	url := fmt.Sprintf(addr+"/del-task?id=%d", id)
+	req, err := http.NewRequest(http.MethodDelete, url, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	resRec := httptest.NewRecorder()
+
+	tasksCtrl := getTasksController(db)
+	tasksCtrl.DeleteTask(resRec, req)
+
+	if resRec.Result().StatusCode != http.StatusOK {
+		t.Fatal(statusCodesMismatch(http.StatusOK, resRec.Result().StatusCode, resRec.Body.String()))
 	}
 }

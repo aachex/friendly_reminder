@@ -12,9 +12,7 @@ import (
 )
 
 var (
-	errInvalidToken        = errors.New("invalid token")
-	errInvalidTokenSubject = errors.New("invalid field 'sub' in token claims")
-	errReadingBody         = errors.New("error reading request body")
+	errReadingBody = errors.New("error reading request body")
 )
 
 var key = []byte(os.Getenv("SECRET_STR"))

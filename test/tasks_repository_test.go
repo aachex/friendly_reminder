@@ -3,7 +3,6 @@ package test
 import (
 	"testing"
 
-	"github.com/artemwebber1/friendly_reminder/internal/models"
 	"github.com/artemwebber1/friendly_reminder/internal/repository"
 )
 
@@ -23,14 +22,10 @@ func TestGetList(t *testing.T) {
 
 	// Пользователь добавляет новые дела в свой список
 	itemsRepo := repository.NewTasksRepository(db)
-	tasks := []models.Task{
-		{Value: "сделать дз", NumberInList: 1},
-		{Value: "погладить кошку", NumberInList: 2},
-		{Value: "исправить оценки", NumberInList: 3},
-	}
+	tasks := []string{"do homework", "smth", "##@@??"}
 
 	for _, task := range tasks {
-		itemsRepo.AddTask(task.Value, email)
+		itemsRepo.AddTask(task, email)
 	}
 
 	list, err := itemsRepo.GetList(email)
@@ -43,13 +38,9 @@ func TestGetList(t *testing.T) {
 	}
 
 	for i := range list {
-		if list[i].Value != tasks[i].Value || list[i].NumberInList != tasks[i].NumberInList || list[i].UserEmail != email {
+		if list[i].Value != tasks[i] || list[i].UserEmail != email {
 			t.Fatal("slices are not equal")
 		}
-	}
-
-	if list[len(list)-1].NumberInList != int64(len(list)) {
-		t.Fatal("invalid numeration")
 	}
 }
 
@@ -65,8 +56,8 @@ func TestAddTask_InvalidEmail(t *testing.T) {
 
 	tasksRepo := repository.NewTasksRepository(db)
 
-	err = tasksRepo.AddTask("error", "invalid@mail.com")
+	_, err = tasksRepo.AddTask("error", "invalid@mail.com")
 	if err == nil {
-		t.Fail()
+		t.Fatal(err)
 	}
 }

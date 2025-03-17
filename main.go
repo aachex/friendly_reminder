@@ -57,7 +57,10 @@ func main() {
 	// Создание контроллеров и добавление эндпоинтов
 	mux := http.NewServeMux()
 	usersController := controller.NewUsersController(usersRepo, unverifiedUsersRepo, emailSender, config)
+	tasksController := controller.NewTasksController(tasksRepo)
+
 	usersController.AddEndpoints(mux)
+	tasksController.AddEndpoints(mux)
 
 	// Запуск рассыльщика
 	listSender := reminder.New(emailSender, usersRepo, tasksRepo)

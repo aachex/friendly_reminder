@@ -45,6 +45,10 @@ func cleanDb(db *sql.DB, t *testing.T) {
 	db.Close()
 }
 
+func statusCodesMismatch(wanted, got int, body string) string {
+	return fmt.Sprintf("Wanted status code %d, got %d.\nResponse body: %s", wanted, got, body)
+}
+
 func getJwt(t *testing.T, usersCtrl *controller.UsersController) string {
 	resRec := httptest.NewRecorder()
 	body := fmt.Appendf(nil, "{\"email\": \"%s\", \"password\": \"%s\"}", mock.email, mock.pwd)

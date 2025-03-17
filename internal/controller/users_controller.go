@@ -12,7 +12,7 @@ import (
 	"github.com/artemwebber1/friendly_reminder/internal/models"
 	"github.com/artemwebber1/friendly_reminder/internal/repository"
 	"github.com/artemwebber1/friendly_reminder/pkg/email"
-	"github.com/artemwebber1/friendly_reminder/pkg/middleware"
+	mw "github.com/artemwebber1/friendly_reminder/pkg/middleware"
 	"github.com/golang-jwt/jwt/v5"
 )
 
@@ -38,10 +38,21 @@ func NewUsersController(
 }
 
 func (c *UsersController) AddEndpoints(mux *http.ServeMux) {
-	mux.HandleFunc("POST /new-user", c.SendConfirmEmailLink)
-	mux.HandleFunc("POST /login", c.Login)
-	mux.HandleFunc("GET /confirm-email", c.ConfirmEmail)
-	mux.HandleFunc("PATCH /sign-user", middleware.RequireAuthorization(c.SignUser))
+	mux.HandleFunc(
+		"POST /new-user",
+		c.SendConfirmEmailLink)
+
+	mux.HandleFunc(
+		"POST /login",
+		c.Login)
+
+	mux.HandleFunc(
+		"GET /confirm-email",
+		c.ConfirmEmail)
+
+	mux.HandleFunc(
+		"PATCH /sign-user",
+		mw.UseAuthorization(c.SignUser))
 }
 
 // AddUser создаёт нового пользователя в базе данных.
@@ -54,7 +65,7 @@ func (c *UsersController) SendConfirmEmailLink(w http.ResponseWriter, r *http.Re
 	}
 
 	if c.usersRepo.EmailExists(user.Email) {
-		http.Error(w, "User with this email already exists", http.StatusForbidden)
+		http.Error(w, "user with this email already exists", http.StatusForbidden)
 		return
 	}
 
@@ -68,14 +79,14 @@ func (c *UsersController) SendConfirmEmailLink(w http.ResponseWriter, r *http.Re
 	}
 
 	if err != nil {
-		http.Error(w, "Error creating confirm token", http.StatusInternalServerError)
+		http.Error(w, fmt.Sprintf("error creating confirm token: %s", err), http.StatusInternalServerError)
 		return
 	}
 
 	// Ссылка для подтверждения электронной почты
 	confirmLink := c.cfg.Host + ":" + c.cfg.Port + "/confirm-email?t=" + confirmToken
 
-	log.Printf("Sending confirm email link to '%s'...\n", user.Email)
+	log.Printf("Sending an email confirmation link to '%s'...\n", user.Email)
 
 	const subject = "Подтверждение электронной почты"
 	body := fmt.Sprintf("Пожалуйста, подтвердите свою электронную почту, перейдя по ссылке:\n%s\n\nЕсли вы не запрашивали это письмо, проигнорируйте его.", confirmLink)
@@ -84,6 +95,8 @@ func (c *UsersController) SendConfirmEmailLink(w http.ResponseWriter, r *http.Re
 		body,
 		user.Email)
 	w.Write([]byte(confirmToken))
+
+	log.Printf("Sent an email confirmation link to '%s'\n", user.Email)
 }
 
 // ConfirmEmail является эндпоинтом, на который пользователь попадёт, подтверждая электронную почту.
@@ -98,14 +111,14 @@ func (c *UsersController) ConfirmEmail(w http.ResponseWriter, r *http.Request) {
 
 	user, err := c.unverifiedUsersRepo.GetUserByToken(token)
 	if err != nil {
-		http.Error(w, "impossible to confirm email: undefined user", http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	w.Write([]byte("Почта подтверждена"))
+	w.Write([]byte("Email confirmed succesfully"))
 	err = c.unverifiedUsersRepo.DeleteToken(token)
 	if err != nil {
-		http.Error(w, "failed to delete confirm token", http.StatusForbidden)
+		http.Error(w, fmt.Sprintf("failed to delete confirm token: %s", err), http.StatusForbidden)
 		return
 	}
 
@@ -118,8 +131,8 @@ func (c *UsersController) ConfirmEmail(w http.ResponseWriter, r *http.Request) {
 //
 // Обрабатывает PATCH запросы по пути '/sign-user'.
 func (c *UsersController) SignUser(w http.ResponseWriter, r *http.Request) {
-	rawTok := getRawJwtFromHeader(r.Header)
-	jwtClaims, err := readJWT(rawTok)
+	rawJwt := getRawJwtFromHeader(r.Header)
+	jwtClaims, err := readJWT(rawJwt)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusForbidden)
 		return
@@ -127,7 +140,7 @@ func (c *UsersController) SignUser(w http.ResponseWriter, r *http.Request) {
 
 	userEmail, err := jwtClaims.GetSubject()
 	if err != nil {
-		http.Error(w, errInvalidTokenSubject.Error(), http.StatusForbidden)
+		http.Error(w, err.Error(), http.StatusForbidden)
 		return
 	}
 
@@ -163,7 +176,7 @@ func (c *UsersController) Login(w http.ResponseWriter, r *http.Request) {
 	tok := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	tokStr, err := tok.SignedString(key)
 	if err != nil {
-		http.Error(w, "failed to sign token", http.StatusBadRequest)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
