@@ -24,6 +24,10 @@ func (c *TasksController) AddEndpoints(mux *http.ServeMux) {
 		mw.UseLogging(mw.UseAuthorization(c.CreateTask)))
 
 	mux.HandleFunc(
+		"GET /list",
+		mw.UseAuthorization(c.GetList))
+
+	mux.HandleFunc(
 		"DELETE /del-task",
 		mw.UseLogging(mw.UseAuthorization(c.DeleteTask)))
 }
@@ -46,6 +50,7 @@ func (c *TasksController) CreateTask(w http.ResponseWriter, r *http.Request) {
 	}
 
 	type newTask struct {
+		Id    int64  `json:"task_id"`
 		Value string `json:"value"`
 	}
 
@@ -55,14 +60,39 @@ func (c *TasksController) CreateTask(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = c.tasksRepo.AddTask(task.Value, email)
+	id, err := c.tasksRepo.AddTask(task.Value, email)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
+	task.Id = id
+
 	w.WriteHeader(http.StatusCreated)
-	w.Write([]byte("Task was created succesfully"))
+	writeJson(w, task)
+}
+
+func (c *TasksController) GetList(w http.ResponseWriter, r *http.Request) {
+	rawJwt := getRawJwtFromHeader(r.Header)
+	jwtClaims, err := readJWT(rawJwt)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusForbidden)
+		return
+	}
+
+	email, err := jwtClaims.GetSubject()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusForbidden)
+		return
+	}
+
+	list, err := c.tasksRepo.GetList(email)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	writeJson(w, &list)
 }
 
 // DeleteTask удаляет задачу из списка пользователя.

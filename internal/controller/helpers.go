@@ -30,6 +30,20 @@ func readBody[T any](body io.ReadCloser) (*T, error) {
 	return &t, nil
 }
 
+func writeJson[T any](w http.ResponseWriter, obj T) {
+	b, err := json.Marshal(obj)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	_, err = w.Write(b)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+}
+
 func readJWT(rawTok string) (jwt.MapClaims, error) {
 	tok, err := jwt.Parse(rawTok, func(t *jwt.Token) (interface{}, error) {
 		_, ok := t.Method.(*jwt.SigningMethodHMAC)
