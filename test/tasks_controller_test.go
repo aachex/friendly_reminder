@@ -27,7 +27,7 @@ func TestCreateTask_Unauthorized(t *testing.T) {
 	tasksCtrl.CreateTask(resRec, req)
 
 	if resRec.Result().StatusCode != http.StatusForbidden {
-		t.Fatalf("Wanted status code %d, got %d", http.StatusForbidden, resRec.Result().StatusCode)
+		t.Fatal(statusCodesMismatch(http.StatusForbidden, resRec.Result().StatusCode, resRec.Body.String()))
 	}
 }
 

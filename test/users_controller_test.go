@@ -26,8 +26,8 @@ func TestSendConfirmEmailLink(t *testing.T) {
 	resRec := httptest.NewRecorder()
 	usersCtrl.SendConfirmEmailLink(resRec, req)
 
-	if resRec.Result().StatusCode != 200 {
-		t.Fatalf("Wanted status code 200, got %d. Body: %s", resRec.Result().StatusCode, resRec.Body)
+	if resRec.Result().StatusCode != http.StatusOK {
+		t.Fatal(statusCodesMismatch(http.StatusOK, resRec.Result().StatusCode, resRec.Body.String()))
 	}
 
 	tok := resRec.Body.String()
@@ -84,7 +84,7 @@ func TestSignUser_Unauthorized(t *testing.T) {
 	usersCtrl := getUsersController(db)
 	usersCtrl.SignUser(resRec, req)
 	if resRec.Result().StatusCode != http.StatusForbidden {
-		t.Fatalf("Wanted status code %d, got: %d.", http.StatusForbidden, resRec.Result().StatusCode)
+		t.Fatal(statusCodesMismatch(http.StatusForbidden, resRec.Result().StatusCode, resRec.Body.String()))
 	}
 }
 
@@ -109,7 +109,7 @@ func TestSignUser(t *testing.T) {
 	resRec := httptest.NewRecorder()
 	usersCtrl.SignUser(resRec, req)
 	if resRec.Result().StatusCode != http.StatusOK {
-		t.Fatalf("Wanted status code %d, got %d.\nResponse body: %s", http.StatusOK, resRec.Result().StatusCode, resRec.Body)
+		t.Fatal(statusCodesMismatch(http.StatusOK, resRec.Result().StatusCode, resRec.Body.String()))
 	}
 }
 
@@ -133,7 +133,7 @@ func TestLogin(t *testing.T) {
 	usersCtrl := getUsersController(db)
 	usersCtrl.Login(resRec, req)
 	if resRec.Result().StatusCode != http.StatusOK {
-		t.Fatalf("Wanted status code %d, got %d.\nResponse body: %s", http.StatusOK, resRec.Result().StatusCode, resRec.Body)
+		t.Fatal(statusCodesMismatch(http.StatusOK, resRec.Result().StatusCode, resRec.Body.String()))
 	}
 }
 
@@ -151,6 +151,6 @@ func TestLogin_UserDoesntExist(t *testing.T) {
 	usersCtrl := getUsersController(db)
 	usersCtrl.Login(resRec, req)
 	if resRec.Result().StatusCode != http.StatusForbidden {
-		t.Fatalf("Wanted status code %d, got %d.\nResponse body: %s", http.StatusForbidden, resRec.Result().StatusCode, resRec.Body)
+		t.Fatal(statusCodesMismatch(http.StatusForbidden, resRec.Result().StatusCode, resRec.Body.String()))
 	}
 }
