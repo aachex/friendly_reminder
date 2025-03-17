@@ -40,19 +40,19 @@ func NewUsersController(
 func (c *UsersController) AddEndpoints(mux *http.ServeMux) {
 	mux.HandleFunc(
 		"POST /new-user",
-		c.SendConfirmEmailLink)
+		mw.UseLogging(c.SendConfirmEmailLink))
 
 	mux.HandleFunc(
 		"POST /login",
-		c.Login)
+		mw.UseLogging(c.Login))
 
 	mux.HandleFunc(
 		"GET /confirm-email",
-		c.ConfirmEmail)
+		mw.UseLogging(c.ConfirmEmail))
 
 	mux.HandleFunc(
 		"PATCH /subscribe",
-		mw.UseAuthorization(c.SubscribeUser))
+		mw.UseLogging(c.SubscribeUser))
 }
 
 // AddUser создаёт нового пользователя в базе данных.

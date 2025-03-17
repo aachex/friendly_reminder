@@ -21,11 +21,11 @@ func NewTasksController(tr repository.TasksRepository) *TasksController {
 func (c *TasksController) AddEndpoints(mux *http.ServeMux) {
 	mux.HandleFunc(
 		"POST /new-task",
-		mw.UseAuthorization(c.CreateTask))
+		mw.UseLogging(mw.UseAuthorization(c.CreateTask)))
 
 	mux.HandleFunc(
 		"DELETE /del-task",
-		mw.UseAuthorization(c.DeleteTask))
+		mw.UseLogging(mw.UseAuthorization(c.DeleteTask)))
 }
 
 // CreateTask создаёт новую задачу в списке пользователя.
