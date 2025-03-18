@@ -30,7 +30,7 @@ var cfg = config.NewConfig(`D:\projects\golang\Web\friendly_reminder\config\conf
 var addr = cfg.Host + ":" + cfg.Port
 
 func openDb(t *testing.T) *sql.DB {
-	db, err := sql.Open("sqlite3", `D:\projects\golang\Web\friendly_reminder\db\database.db`)
+	db, err := sql.Open(cfg.DbOptions.DriverName, cfg.DbOptions.DbPath)
 	if err != nil {
 		t.Fatal(err)
 	}

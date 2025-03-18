@@ -23,12 +23,10 @@ func main() {
 	if err != nil {
 		log.Fatal("Failed to load .env file")
 	}
-	config := config.NewConfig(`config\config.json`)
+	cfg := config.NewConfig(`config\config.json`)
 
 	// Подключение к бд
-	const driverName = "sqlite3"
-	const dbPath = `D:\projects\golang\Web\friendly_reminder\db\database.db`
-	db, err := sql.Open(driverName, dbPath)
+	db, err := sql.Open(cfg.DbOptions.DriverName, cfg.DbOptions.DbPath)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -43,20 +41,21 @@ func main() {
 
 	log.SetOutput(logFile)
 
-	// Инициализация контроллеров и репозиториев
+	// Инициализация репозиториев
 	usersRepo := repository.NewUsersRepository(db)
 	tasksRepo := repository.NewTasksRepository(db)
 	unverifiedUsersRepo := repository.NewUnverifiedUsersRepository(db)
 
+	// Объект для рассылки писем
 	emailSender := email.NewSender(
 		os.Getenv("EMAIL"),
 		os.Getenv("EMAIL_PASSWORD"),
-		config.EmailOptions.Host,
-		config.EmailOptions.Port)
+		cfg.EmailOptions.Host,
+		cfg.EmailOptions.Port)
 
 	// Создание контроллеров и добавление эндпоинтов
 	mux := http.NewServeMux()
-	usersController := controller.NewUsersController(usersRepo, unverifiedUsersRepo, emailSender, config)
+	usersController := controller.NewUsersController(usersRepo, unverifiedUsersRepo, emailSender, cfg)
 	tasksController := controller.NewTasksController(tasksRepo)
 
 	usersController.AddEndpoints(mux)
@@ -64,10 +63,10 @@ func main() {
 
 	// Запуск рассыльщика
 	listSender := reminder.New(emailSender, usersRepo, tasksRepo)
-	go listSender.StartSending(config.ListSenderOptions.DelayInSeconds * time.Second)
+	go listSender.StartSending(cfg.ListSenderOptions.Delay * time.Second)
 
 	// Запуск сервера
-	addr := config.Host + ":" + config.Port
+	addr := cfg.Host + ":" + cfg.Port
 	fmt.Println("Listening:", addr)
-	log.Fatal(http.ListenAndServe(":"+config.Port, mux))
+	log.Fatal(http.ListenAndServe(":"+cfg.Port, mux))
 }

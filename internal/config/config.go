@@ -7,14 +7,21 @@ import (
 )
 
 type Config struct {
-	Host         string `json:"host"`
-	Port         string `json:"port"`
+	Host string `json:"host"`
+	Port string `json:"port"`
+
+	DbOptions struct {
+		DriverName string `json:"driver"`
+		DbPath     string `json:"path"`
+	}
+
 	EmailOptions struct {
 		Host string `json:"emailHost"`
 		Port string `json:"emailPort"`
 	} `json:"emailOptions"`
+
 	ListSenderOptions struct {
-		DelayInSeconds time.Duration `json:"delayInSeconds"`
+		Delay time.Duration `json:"delayInSeconds"`
 	} `json:"listSenderOptions"`
 }
 

@@ -1,6 +1,10 @@
 {
     "host": "http://localhost",
     "port": "8080",
+    "dbOptions": {
+        "driver": "sqlite3",
+        "path": "D:\\projects\\golang\\Web\\friendly_reminder\\db\\database.db"
+    },
     "emailOptions": {
         "emailHost": "smtp.gmail.com",
         "emailPort": "587"
