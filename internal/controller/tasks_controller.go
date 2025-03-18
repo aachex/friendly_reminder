@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/artemwebber1/friendly_reminder/internal/repository"
+	"github.com/artemwebber1/friendly_reminder/pkg/jwtservice"
 	mw "github.com/artemwebber1/friendly_reminder/pkg/middleware"
 )
 
@@ -45,7 +46,7 @@ func (c *TasksController) AddEndpoints(mux *http.ServeMux) {
 // Обрабатывает POST запросы по пути '/new-task'.
 func (c *TasksController) CreateTask(w http.ResponseWriter, r *http.Request) {
 	rawJwt := getRawJwtFromHeader(r.Header)
-	jwtClaims, err := readJWT(rawJwt)
+	jwtClaims, err := jwtservice.GetClaims(rawJwt, jwtKey)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusForbidden)
 		return
@@ -82,7 +83,7 @@ func (c *TasksController) CreateTask(w http.ResponseWriter, r *http.Request) {
 
 func (c *TasksController) GetList(w http.ResponseWriter, r *http.Request) {
 	rawJwt := getRawJwtFromHeader(r.Header)
-	jwtClaims, err := readJWT(rawJwt)
+	jwtClaims, err := jwtservice.GetClaims(rawJwt, jwtKey)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusForbidden)
 		return
@@ -105,7 +106,7 @@ func (c *TasksController) GetList(w http.ResponseWriter, r *http.Request) {
 
 func (c *TasksController) ClearList(w http.ResponseWriter, r *http.Request) {
 	rawJwt := getRawJwtFromHeader(r.Header)
-	jwtClaims, err := readJWT(rawJwt)
+	jwtClaims, err := jwtservice.GetClaims(rawJwt, jwtKey)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusForbidden)
 		return
