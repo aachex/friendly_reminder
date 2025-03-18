@@ -95,13 +95,13 @@ func (c *UsersController) SendConfirmEmailLink(w http.ResponseWriter, r *http.Re
 
 	const subject = "Email confirmation"
 	body := fmt.Sprintf("Please, confirm your email by clicking on the link:\n%s\n\nIf you didn't request this mail, ignore it.", confirmLink)
-	c.emailSender.Send(
+
+	go c.emailSender.Send(
 		subject,
 		body,
 		user.Email)
-	w.Write([]byte(confirmToken))
 
-	log.Printf("Sent an email confirmation link to '%s'\n", user.Email)
+	w.Write([]byte(confirmToken))
 }
 
 // ConfirmEmail является эндпоинтом, на который пользователь попадёт, подтверждая электронную почту.

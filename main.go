@@ -66,7 +66,15 @@ func main() {
 	go listSender.StartSending(cfg.ListSenderOptions.Delay * time.Second)
 
 	// Запуск сервера
-	addr := cfg.Host + ":" + cfg.Port
-	fmt.Println("Listening:", addr)
-	log.Fatal(http.ListenAndServe(":"+cfg.Port, mux))
+	addr := ":" + cfg.Port
+	fmt.Println("Listening:", cfg.Host+addr)
+
+	serv := &http.Server{
+		Addr:         addr,
+		Handler:      mux,
+		ReadTimeout:  cfg.ReadTimeoutInMilliseconds * time.Millisecond,
+		WriteTimeout: cfg.WriteTimeoutInMilliseconds * time.Millisecond,
+	}
+
+	serv.ListenAndServe()
 }

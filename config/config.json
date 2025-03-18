@@ -1,6 +1,8 @@
 {
     "host": "http://localhost",
     "port": "8080",
+    "readTimeoutInMilliseconds": 200,
+    "writeTimeoutInMilliseconds": 200,
     "dbOptions": {
         "driver": "sqlite3",
         "path": "D:\\projects\\golang\\Web\\friendly_reminder\\db\\database.db"
