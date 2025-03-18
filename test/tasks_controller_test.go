@@ -2,10 +2,12 @@ package test
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"github.com/artemwebber1/friendly_reminder/internal/hasher"
 	"github.com/artemwebber1/friendly_reminder/internal/repository"
@@ -64,7 +66,11 @@ func TestDeleteTask(t *testing.T) {
 	usersRepo.AddUser(mock.email, hasher.Hash(mock.pwd))
 
 	tasksRepo := repository.NewTasksRepository(db)
-	id, err := tasksRepo.AddTask("Do homework", mock.email)
+
+	ctx, cancel := context.WithTimeout(t.Context(), time.Millisecond*20)
+	defer cancel()
+
+	id, err := tasksRepo.AddTask(ctx, "Do homework", mock.email)
 	if err != nil {
 		t.Fatal(err)
 	}

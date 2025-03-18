@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"context"
 	"database/sql"
 
 	"github.com/artemwebber1/friendly_reminder/internal/models"
@@ -8,16 +9,16 @@ import (
 
 type TasksRepository interface {
 	// AddItem добавляет новую задачу в список пользователя. Возвращает id созданной задачи.
-	AddTask(value, userEmail string) (int64, error)
+	AddTask(ctx context.Context, value, userEmail string) (int64, error)
 
 	// DeleteTask удаляет задачу по указанному id.
-	DeleteTask(id int64) error
+	DeleteTask(ctx context.Context, id int64) error
 
 	// GetList возвращает список дел пользователя с указанным email.
-	GetList(userEmail string) ([]models.Task, error)
+	GetList(ctx context.Context, userEmail string) ([]models.Task, error)
 
 	// ClearList очищает список указанного пользователя.
-	ClearList(userEmail string) error
+	ClearList(ctx context.Context, userEmail string) error
 }
 
 type tasksRepository struct {
@@ -31,8 +32,8 @@ func NewTasksRepository(db *sql.DB) TasksRepository {
 }
 
 // AddItem добавляет новую задачу в список пользователя. Возвращает id созданноё задачи.
-func (r *tasksRepository) AddTask(value, userEmail string) (int64, error) {
-	res, err := r.db.Exec(`INSERT INTO tasks(value, user_email) VALUES($1, $2)`, value, userEmail)
+func (r *tasksRepository) AddTask(ctx context.Context, value, userEmail string) (int64, error) {
+	res, err := r.db.ExecContext(ctx, `INSERT INTO tasks(value, user_email) VALUES($1, $2)`, value, userEmail)
 	if err != nil {
 		return -1, err
 	}
@@ -46,14 +47,14 @@ func (r *tasksRepository) AddTask(value, userEmail string) (int64, error) {
 }
 
 // DeleteTask удаляет задачу по указанному id.
-func (r *tasksRepository) DeleteTask(id int64) error {
-	_, err := r.db.Exec(`DELETE FROM tasks WHERE task_id = $1`, id)
+func (r *tasksRepository) DeleteTask(ctx context.Context, id int64) error {
+	_, err := r.db.ExecContext(ctx, `DELETE FROM tasks WHERE task_id = $1`, id)
 	return err
 }
 
 // GetList возвращает список дел пользователя с указанным email.
-func (r *tasksRepository) GetList(userEmail string) ([]models.Task, error) {
-	rows, err := r.db.Query("SELECT * FROM tasks WHERE user_email = $1", userEmail)
+func (r *tasksRepository) GetList(ctx context.Context, userEmail string) ([]models.Task, error) {
+	rows, err := r.db.QueryContext(ctx, "SELECT * FROM tasks WHERE user_email = $1", userEmail)
 	if err != nil {
 		return []models.Task{}, err
 	}
@@ -69,7 +70,7 @@ func (r *tasksRepository) GetList(userEmail string) ([]models.Task, error) {
 }
 
 // ClearList очищает список указанного пользователя.
-func (r *tasksRepository) ClearList(userEmail string) error {
-	_, err := r.db.Exec("DELETE FROM tasks WHERE user_email = $1", userEmail)
+func (r *tasksRepository) ClearList(ctx context.Context, userEmail string) error {
+	_, err := r.db.ExecContext(ctx, "DELETE FROM tasks WHERE user_email = $1", userEmail)
 	return err
 }

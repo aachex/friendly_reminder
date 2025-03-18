@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"log"
@@ -61,9 +62,14 @@ func main() {
 	usersController.AddEndpoints(mux)
 	tasksController.AddEndpoints(mux)
 
+	// Контексты
+	bgCtx := context.Background()
+	ctx, cancel := context.WithCancel(bgCtx)
+	defer cancel()
+
 	// Запуск рассыльщика
 	listSender := reminder.New(emailSender, usersRepo, tasksRepo)
-	go listSender.StartSending(cfg.ListSenderOptions.Delay * time.Second)
+	go listSender.StartSending(ctx, cfg.ListSenderOptions.Delay*time.Second)
 
 	// Запуск сервера
 	addr := ":" + cfg.Port

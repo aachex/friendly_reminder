@@ -1,6 +1,7 @@
 package reminder
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"time"
@@ -14,7 +15,7 @@ import (
 type Reminder interface {
 	// StartSending в достаёт из базы данных электронные почты всех пользователей,
 	// подписанных на рассылку, и отправляет им их списки дел c указанным интервалом.
-	StartSending(d time.Duration)
+	StartSending(ctx context.Context, d time.Duration)
 }
 
 type defaultReminder struct {
@@ -33,8 +34,14 @@ func New(s email.Sender, ur repository.UsersRepository, tr repository.TasksRepos
 
 // StartSending в достаёт из базы данных электронные почты всех пользователей,
 // подписанных на рассылку, и отправляет им их списки дел c указанным интервалом.
-func (s *defaultReminder) StartSending(d time.Duration) {
+func (s *defaultReminder) StartSending(ctx context.Context, d time.Duration) {
 	for {
+		select {
+		case <-ctx.Done():
+			return // При отмене заканчиваем рассылку
+		default:
+		}
+
 		log.Println("Sending emails")
 		emails, err := s.usersRepo.GetEmailsSubscribed()
 		if err != nil {
@@ -42,16 +49,16 @@ func (s *defaultReminder) StartSending(d time.Duration) {
 		}
 
 		for _, email := range emails {
-			go s.sendList(email)
+			go s.sendList(ctx, email)
 		}
 
 		time.Sleep(d)
 	}
 }
 
-func (s *defaultReminder) sendList(email string) {
+func (s *defaultReminder) sendList(ctx context.Context, email string) {
 	// Получаем список пользователя
-	list, err := s.tasksRepo.GetList(email)
+	list, err := s.tasksRepo.GetList(ctx, email)
 	if err != nil {
 		log.Fatal(err)
 	}
