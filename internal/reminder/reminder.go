@@ -36,7 +36,7 @@ func New(s email.Sender, ur repository.UsersRepository, tr repository.TasksRepos
 func (s *defaultReminder) StartSending(d time.Duration) {
 	for {
 		log.Println("Sending emails")
-		emails, err := s.usersRepo.GetEmails()
+		emails, err := s.usersRepo.GetEmailsSubscribed()
 		if err != nil {
 			log.Fatal(err)
 		}

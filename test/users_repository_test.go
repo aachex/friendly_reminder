@@ -37,7 +37,7 @@ func TestMakeSigned(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	signedEmails, err := repo.GetEmails()
+	signedEmails, err := repo.GetEmailsSubscribed()
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -14,14 +14,16 @@ type UsersRepository interface {
 	DeleteUser(email string) error
 
 	// Subscribe подписывает пользователя на рассылку электронных писем.
+	// Если параметр subscribe = true, пользователь будет подписан на рассылку, иначе будет отписан.
 	Subscribe(email string, subscr bool) error
 
-	// GetEmails возвращает список зарегестрированных электронных почт.
-	GetEmails() ([]string, error)
+	// GetEmailsSubscribed возвращает список зарегестрированных электронных почт пользователей, подписанных на рассылку.
+	GetEmailsSubscribed() ([]string, error)
 
 	// EmailExists возвращает true если пользователь с данной электронной почтой уже существует.
 	EmailExists(email string) bool
 
+	// UserExists возвращает true, если существует пользователь с указанной почтой и паролем.
 	UserExists(email, password string) bool
 }
 
@@ -57,13 +59,14 @@ func (r *usersRepository) DeleteUser(email string) error {
 }
 
 // Subscribe подписывает пользователя на рассылку электронных писем.
-func (r *usersRepository) Subscribe(email string, subscr bool) error {
-	_, err := r.db.Exec("UPDATE users SET subscribed = $1 WHERE email = $2", subscr, email)
+// Если параметр subscribe = true, пользователь будет подписан на рассылку, иначе будет отписан.
+func (r *usersRepository) Subscribe(email string, subscribe bool) error {
+	_, err := r.db.Exec("UPDATE users SET subscribed = $1 WHERE email = $2", subscribe, email)
 	return err
 }
 
-// GetEmails возвращает список зарегестрированных электронных почт пользователей, подписанных на рассылку.
-func (r *usersRepository) GetEmails() (emails []string, err error) {
+// GetEmailsSubscribed возвращает список зарегестрированных электронных почт пользователей, подписанных на рассылку.
+func (r *usersRepository) GetEmailsSubscribed() (emails []string, err error) {
 	rows, err := r.db.Query("SELECT email FROM users WHERE subscribed = 1")
 	if err != nil {
 		return nil, err
@@ -88,6 +91,7 @@ func (r *usersRepository) EmailExists(email string) bool {
 	return row.Scan() != sql.ErrNoRows
 }
 
+// UserExists возвращает true, если существует пользователь с указанной почтой и паролем.
 func (r *usersRepository) UserExists(email, password string) bool {
 	row := r.db.QueryRow("SELECT email, password FROM users WHERE email = $1 AND password = $2", email, password)
 	return row.Scan() != sql.ErrNoRows
