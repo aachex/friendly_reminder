@@ -1,10 +1,8 @@
 package controller
 
 import (
-	"context"
 	"net/http"
 	"strconv"
-	"time"
 
 	"github.com/artemwebber1/friendly_reminder/internal/repository"
 	"github.com/artemwebber1/friendly_reminder/pkg/jwtservice"
@@ -71,17 +69,9 @@ func (c *TasksController) CreateTask(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ctx, cancel := context.WithTimeout(r.Context(), time.Millisecond*30)
-	defer cancel()
-
-	id, err := c.tasksRepo.AddTask(ctx, task.Value, email)
+	id, err := c.tasksRepo.AddTask(r.Context(), task.Value, email)
 	if err != nil {
-		statusCode := http.StatusBadRequest
-		if err == context.DeadlineExceeded {
-			// Контекст отменён по таймауту
-			statusCode = http.StatusRequestTimeout
-		}
-		http.Error(w, err.Error(), statusCode)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -105,17 +95,9 @@ func (c *TasksController) GetList(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ctx, cancel := context.WithTimeout(r.Context(), time.Millisecond*50)
-	defer cancel()
-
-	list, err := c.tasksRepo.GetList(ctx, email)
+	list, err := c.tasksRepo.GetList(r.Context(), email)
 	if err != nil {
-		statusCode := http.StatusInternalServerError
-		if err == context.DeadlineExceeded {
-			// Контекст отменён по таймауту
-			statusCode = http.StatusRequestTimeout
-		}
-		http.Error(w, err.Error(), statusCode)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -136,17 +118,9 @@ func (c *TasksController) ClearList(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ctx, cancel := context.WithTimeout(r.Context(), time.Millisecond*20)
-	defer cancel()
-
-	err = c.tasksRepo.ClearList(ctx, email)
+	err = c.tasksRepo.ClearList(r.Context(), email)
 	if err != nil {
-		statusCode := http.StatusInternalServerError
-		if err == context.DeadlineExceeded {
-			// Контекст отменён по таймауту
-			statusCode = http.StatusRequestTimeout
-		}
-		http.Error(w, err.Error(), statusCode)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 }
@@ -161,17 +135,9 @@ func (c *TasksController) DeleteTask(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ctx, cancel := context.WithTimeout(r.Context(), time.Millisecond*20)
-	defer cancel()
-
-	err = c.tasksRepo.DeleteTask(ctx, taskId)
+	err = c.tasksRepo.DeleteTask(r.Context(), taskId)
 	if err != nil {
-		statusCode := http.StatusInternalServerError
-		if err == context.DeadlineExceeded {
-			// Контекст отменён по таймауту
-			statusCode = http.StatusRequestTimeout
-		}
-		http.Error(w, err.Error(), statusCode)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 }
