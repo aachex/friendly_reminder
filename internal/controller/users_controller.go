@@ -69,7 +69,7 @@ func (c *UsersController) SendConfirmEmailLink(w http.ResponseWriter, r *http.Re
 		http.Error(w, errReadingBody.Error(), http.StatusBadRequest)
 	}
 
-	if c.usersRepo.EmailExists(user.Email) {
+	if c.usersRepo.EmailExists(r.Context(), user.Email) {
 		http.Error(w, "user with this email already exists", http.StatusForbidden)
 		return
 	}
@@ -130,7 +130,7 @@ func (c *UsersController) ConfirmEmail(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("Email confirmed succesfully"))
 
 	// Пользователь успешно подтвердил электронную почту, добавляем его в базу данных
-	c.usersRepo.AddUser(user.Email, user.Password)
+	c.usersRepo.AddUser(r.Context(), user.Email, user.Password)
 }
 
 // SubscribeUser подписывает пользователя с указанным email на рассылку писем.
@@ -156,7 +156,7 @@ func (c *UsersController) SubscribeUser(w http.ResponseWriter, r *http.Request) 
 		http.Error(w, "invalid value for 'subscribe' param", http.StatusBadRequest)
 		return
 	}
-	c.usersRepo.Subscribe(userEmail, subscribe)
+	c.usersRepo.Subscribe(r.Context(), userEmail, subscribe)
 }
 
 // Login осуществляет вход уже существующего пользователя в систему.
@@ -169,7 +169,7 @@ func (c *UsersController) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if !c.usersRepo.UserExists(user.Email, hasher.Hash(user.Password)) {
+	if !c.usersRepo.UserExists(r.Context(), user.Email, hasher.Hash(user.Password)) {
 		http.Error(w, "invalid email or password", http.StatusForbidden)
 		return
 	}

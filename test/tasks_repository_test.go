@@ -15,7 +15,7 @@ func TestGetList(t *testing.T) {
 	repo := repository.NewUsersRepository(db)
 	const email = "abcde@gmail.com"
 	const passwordHash = "hashedPassword"
-	_, err := repo.AddUser(email, passwordHash)
+	_, err := repo.AddUser(t.Context(), email, passwordHash)
 
 	if err != nil {
 		t.Fatal(err)

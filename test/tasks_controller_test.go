@@ -47,7 +47,7 @@ func TestCreateTask(t *testing.T) {
 	}
 
 	usersRepo := repository.NewUsersRepository(db)
-	usersRepo.AddUser(mock.email, hasher.Hash(mock.pwd))
+	usersRepo.AddUser(t.Context(), mock.email, hasher.Hash(mock.pwd))
 	tok := getJwt(t, getUsersController(db))
 
 	req.Header.Add("Authorization", "Bearer "+tok)
@@ -63,7 +63,7 @@ func TestDeleteTask(t *testing.T) {
 	defer cleanDb(db, t)
 
 	usersRepo := repository.NewUsersRepository(db)
-	usersRepo.AddUser(mock.email, hasher.Hash(mock.pwd))
+	usersRepo.AddUser(t.Context(), mock.email, hasher.Hash(mock.pwd))
 
 	tasksRepo := repository.NewTasksRepository(db)
 

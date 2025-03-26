@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"context"
 	"database/sql"
 )
 
@@ -8,23 +9,23 @@ type UsersRepository interface {
 	// AddUser добавляет нового пользователя.
 	//
 	// Возвращает id нового пользователя и ошибку.
-	AddUser(email, password string) (int64, error)
+	AddUser(ctx context.Context, email, password string) (int64, error)
 
 	// DeleteUser удаляет пользователя из базы данных.
-	DeleteUser(email string) error
+	DeleteUser(ctx context.Context, email string) error
 
 	// Subscribe подписывает пользователя на рассылку электронных писем.
 	// Если параметр subscribe = true, пользователь будет подписан на рассылку, иначе будет отписан.
-	Subscribe(email string, subscr bool) error
+	Subscribe(ctx context.Context, email string, subscr bool) error
 
 	// GetEmailsSubscribed возвращает список зарегестрированных электронных почт пользователей, подписанных на рассылку.
-	GetEmailsSubscribed() ([]string, error)
+	GetEmailsSubscribed(ctx context.Context) ([]string, error)
 
 	// EmailExists возвращает true если пользователь с данной электронной почтой уже существует.
-	EmailExists(email string) bool
+	EmailExists(ctx context.Context, email string) bool
 
 	// UserExists возвращает true, если существует пользователь с указанной почтой и паролем.
-	UserExists(email, password string) bool
+	UserExists(ctx context.Context, email, password string) bool
 }
 
 type usersRepository struct {
@@ -40,8 +41,8 @@ func NewUsersRepository(db *sql.DB) UsersRepository {
 // AddUser добавляет нового пользователя.
 //
 // Возвращает id нового пользователя и ошибку.
-func (r *usersRepository) AddUser(email, password string) (id int64, err error) {
-	res, err := r.db.Exec("INSERT INTO users(email, password) VALUES($1, $2)", email, password)
+func (r *usersRepository) AddUser(ctx context.Context, email, password string) (id int64, err error) {
+	res, err := r.db.ExecContext(ctx, "INSERT INTO users(email, password) VALUES($1, $2)", email, password)
 	if err != nil {
 		return -1, err
 	}
@@ -53,21 +54,21 @@ func (r *usersRepository) AddUser(email, password string) (id int64, err error) 
 }
 
 // DeleteUser удаляет пользователя из базы данных.
-func (r *usersRepository) DeleteUser(email string) error {
-	_, err := r.db.Exec("DELETE FROM users WHERE email = $1", email)
+func (r *usersRepository) DeleteUser(ctx context.Context, email string) error {
+	_, err := r.db.ExecContext(ctx, "DELETE FROM users WHERE email = $1", email)
 	return err
 }
 
 // Subscribe подписывает пользователя на рассылку электронных писем.
 // Если параметр subscribe = true, пользователь будет подписан на рассылку, иначе будет отписан.
-func (r *usersRepository) Subscribe(email string, subscribe bool) error {
-	_, err := r.db.Exec("UPDATE users SET subscribed = $1 WHERE email = $2", subscribe, email)
+func (r *usersRepository) Subscribe(ctx context.Context, email string, subscribe bool) error {
+	_, err := r.db.ExecContext(ctx, "UPDATE users SET subscribed = $1 WHERE email = $2", subscribe, email)
 	return err
 }
 
 // GetEmailsSubscribed возвращает список зарегестрированных электронных почт пользователей, подписанных на рассылку.
-func (r *usersRepository) GetEmailsSubscribed() (emails []string, err error) {
-	rows, err := r.db.Query("SELECT email FROM users WHERE subscribed = 1")
+func (r *usersRepository) GetEmailsSubscribed(ctx context.Context) (emails []string, err error) {
+	rows, err := r.db.QueryContext(ctx, "SELECT email FROM users WHERE subscribed = 1")
 	if err != nil {
 		return nil, err
 	}
@@ -86,13 +87,13 @@ func (r *usersRepository) GetEmailsSubscribed() (emails []string, err error) {
 }
 
 // EmailExists возвращает true если пользователь с данной электронной почтой уже существует.
-func (r *usersRepository) EmailExists(email string) bool {
-	row := r.db.QueryRow("SELECT email FROM users WHERE email = $1", email)
+func (r *usersRepository) EmailExists(ctx context.Context, email string) bool {
+	row := r.db.QueryRowContext(ctx, "SELECT email FROM users WHERE email = $1", email)
 	return row.Scan() != sql.ErrNoRows
 }
 
 // UserExists возвращает true, если существует пользователь с указанной почтой и паролем.
-func (r *usersRepository) UserExists(email, password string) bool {
-	row := r.db.QueryRow("SELECT email, password FROM users WHERE email = $1 AND password = $2", email, password)
+func (r *usersRepository) UserExists(ctx context.Context, email, password string) bool {
+	row := r.db.QueryRowContext(ctx, "SELECT email, password FROM users WHERE email = $1 AND password = $2", email, password)
 	return row.Scan() != sql.ErrNoRows
 }

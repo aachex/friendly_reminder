@@ -43,7 +43,7 @@ func (s *defaultReminder) StartSending(ctx context.Context, d time.Duration) {
 		}
 
 		log.Println("Sending emails")
-		emails, err := s.usersRepo.GetEmailsSubscribed()
+		emails, err := s.usersRepo.GetEmailsSubscribed(ctx)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -78,7 +78,7 @@ func (s *defaultReminder) sendList(ctx context.Context, email string) {
 		// Меняем заголовок и тело письма, чтобы уведомить пользователя об этом.
 		subject = "You were unsubscribed from the mailing."
 		body = "Your to-do list is empty. Add new tasks to your list and subscribe to the mailing."
-		s.usersRepo.Subscribe(email, false) // Отписка от рассылки
+		s.usersRepo.Subscribe(ctx, email, false) // Отписка от рассылки
 	}
 
 	if err = s.sender.Send(subject, body, email); err != nil {

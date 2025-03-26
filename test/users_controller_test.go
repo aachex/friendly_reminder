@@ -96,7 +96,7 @@ func TestSubscribeUser(t *testing.T) {
 
 	// Сначала регистрируем пользователя для получения токена авторизации
 	usersRepo := repository.NewUsersRepository(db)
-	usersRepo.AddUser(mock.email, hasher.Hash(mock.pwd))
+	usersRepo.AddUser(t.Context(), mock.email, hasher.Hash(mock.pwd))
 
 	tok := getJwt(t, usersCtrl)
 
@@ -118,7 +118,7 @@ func TestLogin(t *testing.T) {
 	defer cleanDb(db, t)
 
 	usersRepo := repository.NewUsersRepository(db)
-	_, err := usersRepo.AddUser(mock.email, hasher.Hash(mock.pwd))
+	_, err := usersRepo.AddUser(t.Context(), mock.email, hasher.Hash(mock.pwd))
 	if err != nil {
 		t.Fatalf("Failed to create user: %s", err)
 	}

@@ -14,9 +14,9 @@ func TestAddUser(t *testing.T) {
 
 	repo := repository.NewUsersRepository(db)
 
-	_, err := repo.AddUser(mock.email, mock.pwd)
+	_, err := repo.AddUser(t.Context(), mock.email, mock.pwd)
 
-	if err != nil || !repo.EmailExists(mock.email) {
+	if err != nil || !repo.EmailExists(t.Context(), mock.email) {
 		t.Fatal(err)
 	}
 }
@@ -27,17 +27,17 @@ func TestMakeSigned(t *testing.T) {
 
 	repo := repository.NewUsersRepository(db)
 
-	_, err := repo.AddUser(mock.email, mock.pwd)
+	_, err := repo.AddUser(t.Context(), mock.email, mock.pwd)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	err = repo.Subscribe(mock.email, true)
+	err = repo.Subscribe(t.Context(), mock.email, true)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	signedEmails, err := repo.GetEmailsSubscribed()
+	signedEmails, err := repo.GetEmailsSubscribed(t.Context())
 	if err != nil {
 		t.Fatal(err)
 	}
