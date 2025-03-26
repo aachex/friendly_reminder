@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"database/sql"
+	"sync"
 )
 
 type UsersRepository interface {
@@ -29,6 +30,7 @@ type UsersRepository interface {
 }
 
 type usersRepository struct {
+	mu sync.Mutex
 	db *sql.DB
 }
 
@@ -42,6 +44,9 @@ func NewUsersRepository(db *sql.DB) UsersRepository {
 //
 // Возвращает id нового пользователя и ошибку.
 func (r *usersRepository) AddUser(ctx context.Context, email, password string) (id int64, err error) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
 	res, err := r.db.ExecContext(ctx, "INSERT INTO users(email, password) VALUES($1, $2)", email, password)
 	if err != nil {
 		return -1, err
@@ -55,6 +60,9 @@ func (r *usersRepository) AddUser(ctx context.Context, email, password string) (
 
 // DeleteUser удаляет пользователя из базы данных.
 func (r *usersRepository) DeleteUser(ctx context.Context, email string) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
 	_, err := r.db.ExecContext(ctx, "DELETE FROM users WHERE email = $1", email)
 	return err
 }
@@ -62,6 +70,9 @@ func (r *usersRepository) DeleteUser(ctx context.Context, email string) error {
 // Subscribe подписывает пользователя на рассылку электронных писем.
 // Если параметр subscribe = true, пользователь будет подписан на рассылку, иначе будет отписан.
 func (r *usersRepository) Subscribe(ctx context.Context, email string, subscribe bool) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
 	_, err := r.db.ExecContext(ctx, "UPDATE users SET subscribed = $1 WHERE email = $2", subscribe, email)
 	return err
 }
