@@ -24,6 +24,8 @@ func main() {
 	if err != nil {
 		log.Fatal("Failed to load .env file")
 	}
+
+	// Конфигурация
 	cfg := config.NewConfig(`config\config.json`)
 
 	// Подключение к бд
