@@ -21,7 +21,7 @@ func TestCreateTask_Unauthorized(t *testing.T) {
 
 	resRec := httptest.NewRecorder()
 
-	req, err := http.NewRequest(http.MethodPost, addr+"/new-task", nil)
+	req, err := http.NewRequest(http.MethodPost, addr+"/tasks/new", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -41,7 +41,7 @@ func TestCreateTask(t *testing.T) {
 
 	resRec := httptest.NewRecorder()
 	body := bytes.NewReader(fmt.Appendf(nil, "{\"value\": \"%s\"}", "smth"))
-	req, err := http.NewRequest(http.MethodPost, addr+"/new-task", body)
+	req, err := http.NewRequest(http.MethodPost, addr+"/tasks/new", body)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -75,7 +75,7 @@ func TestDeleteTask(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	url := fmt.Sprintf(addr+"/del-task?id=%d", id)
+	url := fmt.Sprintf(addr+"/tasks/del?id=%d", id)
 	req, err := http.NewRequest(http.MethodDelete, url, nil)
 	if err != nil {
 		t.Fatal(err)

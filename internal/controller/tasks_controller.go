@@ -21,29 +21,29 @@ func NewTasksController(tr repository.TasksRepository) *TasksController {
 
 func (c *TasksController) AddEndpoints(mux *http.ServeMux) {
 	mux.HandleFunc(
-		"POST /new-task",
+		"POST /tasks/new",
 		mw.UseLogging(mw.UseAuthorization(c.CreateTask)),
 	)
 
 	mux.HandleFunc(
-		"GET /list",
+		"GET /tasks/list",
 		mw.UseLogging(mw.UseAuthorization(c.GetList)),
 	)
 
 	mux.HandleFunc(
-		"DELETE /clear-list",
+		"DELETE /tasks/clear-list",
 		mw.UseLogging(mw.UseAuthorization(c.ClearList)),
 	)
 
 	mux.HandleFunc(
-		"DELETE /del-task",
+		"DELETE /tasks/del",
 		mw.UseLogging(mw.UseAuthorization(c.DeleteTask)),
 	)
 }
 
 // CreateTask создаёт новую задачу в списке пользователя.
 //
-// Обрабатывает POST запросы по пути '/new-task'.
+// Обрабатывает POST запросы по пути '/tasks/new'.
 func (c *TasksController) CreateTask(w http.ResponseWriter, r *http.Request) {
 	rawJwt := jwtservice.FromHeader(r.Header)
 	jwtClaims, err := jwtservice.GetClaims(rawJwt, jwtKey())
@@ -81,6 +81,9 @@ func (c *TasksController) CreateTask(w http.ResponseWriter, r *http.Request) {
 	writeJson(w, task)
 }
 
+// GetList получает список пользователя.
+//
+// Обрабатывает GET запросы по пути '/tasks/list'.
 func (c *TasksController) GetList(w http.ResponseWriter, r *http.Request) {
 	rawJwt := jwtservice.FromHeader(r.Header)
 	jwtClaims, err := jwtservice.GetClaims(rawJwt, jwtKey())
@@ -104,6 +107,9 @@ func (c *TasksController) GetList(w http.ResponseWriter, r *http.Request) {
 	writeJson(w, &list)
 }
 
+// ClearList удаляет все задачи из списка пользователя.
+//
+// Обрабатывает DELETE запросы по пути '/tasks/clear-list'.
 func (c *TasksController) ClearList(w http.ResponseWriter, r *http.Request) {
 	rawJwt := jwtservice.FromHeader(r.Header)
 	jwtClaims, err := jwtservice.GetClaims(rawJwt, jwtKey())
@@ -127,7 +133,7 @@ func (c *TasksController) ClearList(w http.ResponseWriter, r *http.Request) {
 
 // DeleteTask удаляет задачу из списка пользователя.
 //
-// Обрабатывает DELETE запросы по пути '/del-task'.
+// Обрабатывает DELETE запросы по пути '/tasks/del'.
 func (c *TasksController) DeleteTask(w http.ResponseWriter, r *http.Request) {
 	taskId, err := strconv.ParseInt(r.URL.Query().Get("id"), 10, 64)
 	if err != nil {
