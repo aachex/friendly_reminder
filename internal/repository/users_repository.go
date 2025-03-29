@@ -37,6 +37,7 @@ type usersRepository struct {
 func NewUsersRepository(db *sql.DB) UsersRepository {
 	return &usersRepository{
 		db: db,
+		mu: sync.Mutex{},
 	}
 }
 

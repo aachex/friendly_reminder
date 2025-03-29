@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"database/sql"
+	"sync"
 
 	"github.com/artemwebber1/friendly_reminder/internal/models"
 )
@@ -22,18 +23,23 @@ type TasksRepository interface {
 }
 
 type tasksRepository struct {
+	mu sync.Mutex
 	db *sql.DB
 }
 
 func NewTasksRepository(db *sql.DB) TasksRepository {
 	return &tasksRepository{
 		db: db,
+		mu: sync.Mutex{},
 	}
 }
 
 // AddItem добавляет новую задачу в список пользователя. Возвращает id созданноё задачи.
 func (r *tasksRepository) AddTask(ctx context.Context, value, userEmail string) (int64, error) {
-	res, err := r.db.ExecContext(ctx, `INSERT INTO tasks(value, user_email) VALUES($1, $2)`, value, userEmail)
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	res, err := r.db.ExecContext(ctx, "INSERT INTO tasks(value, user_email) VALUES($1, $2)", value, userEmail)
 	if err != nil {
 		return -1, err
 	}
@@ -48,6 +54,9 @@ func (r *tasksRepository) AddTask(ctx context.Context, value, userEmail string) 
 
 // DeleteTask удаляет задачу по указанному id.
 func (r *tasksRepository) DeleteTask(ctx context.Context, id int64) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
 	_, err := r.db.ExecContext(ctx, `DELETE FROM tasks WHERE task_id = $1`, id)
 	return err
 }
@@ -71,6 +80,9 @@ func (r *tasksRepository) GetList(ctx context.Context, userEmail string) ([]mode
 
 // ClearList очищает список указанного пользователя.
 func (r *tasksRepository) ClearList(ctx context.Context, userEmail string) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
 	_, err := r.db.ExecContext(ctx, "DELETE FROM tasks WHERE user_email = $1", userEmail)
 	return err
 }

@@ -4,6 +4,7 @@ import (
 	"crypto/rand"
 	"database/sql"
 	"encoding/base32"
+	"sync"
 
 	"github.com/artemwebber1/friendly_reminder/internal/models"
 )
@@ -34,12 +35,14 @@ type UnverifiedUsersRepository interface {
 }
 
 type unverifiedUsersRepository struct {
+	mu sync.Mutex
 	db *sql.DB
 }
 
 func NewUnverifiedUsersRepository(db *sql.DB) UnverifiedUsersRepository {
 	return &unverifiedUsersRepository{
 		db: db,
+		mu: sync.Mutex{},
 	}
 }
 
@@ -52,6 +55,9 @@ func (r *unverifiedUsersRepository) TokenExists(t string) bool {
 // CreateToken добавляет пользователя в базу данных, как не подтвердившего электронную почту, и создаёт токен для подтверждения.
 // Возвращает сам токен и ошибку.
 func (r *unverifiedUsersRepository) CreateToken(email, pwd string) (string, error) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
 	token := generateToken()
 
 	_, err := r.db.Exec("INSERT INTO unverified_users(user_email, user_password, token) VALUES($1, $2, $3)", email, pwd, token)
@@ -64,12 +70,18 @@ func (r *unverifiedUsersRepository) CreateToken(email, pwd string) (string, erro
 
 // DeleteToken удаляет токен из базы данных.
 func (r *unverifiedUsersRepository) DeleteToken(token string) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
 	_, err := r.db.Exec("DELETE FROM unverified_users WHERE token = $1", token)
 	return err
 }
 
 // UpdateToken создаёт новый токен для пользователя с указанным email.
 func (r *unverifiedUsersRepository) UpdateToken(email string) (string, error) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
 	token := generateToken()
 
 	_, err := r.db.Exec("UPDATE unverified_users SET token = $1 WHERE user_email = $2", token, email)
