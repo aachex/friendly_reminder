@@ -36,12 +36,6 @@ func New(s email.Sender, ur repository.UsersRepository, tr repository.TasksRepos
 // подписанных на рассылку, и отправляет им их списки дел c указанным интервалом.
 func (s *defaultReminder) StartSending(ctx context.Context, d time.Duration) {
 	for {
-		select {
-		case <-ctx.Done():
-			return // При отмене заканчиваем рассылку
-		default:
-		}
-
 		log.Println("Sending emails")
 		emails, err := s.usersRepo.GetEmailsSubscribed(ctx)
 		if err != nil {
@@ -52,7 +46,12 @@ func (s *defaultReminder) StartSending(ctx context.Context, d time.Duration) {
 			go s.sendList(ctx, email)
 		}
 
-		time.Sleep(d)
+		select {
+		case <-ctx.Done():
+			return
+		case <-time.After(d):
+			continue
+		}
 	}
 }
 

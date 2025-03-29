@@ -14,11 +14,21 @@ import (
 	"github.com/artemwebber1/friendly_reminder/internal/reminder"
 	"github.com/artemwebber1/friendly_reminder/internal/repository"
 	"github.com/artemwebber1/friendly_reminder/pkg/email"
+	"github.com/joho/godotenv"
 	_ "github.com/mattn/go-sqlite3" // sqlite3 driver
 )
 
+func init() {
+	// Загрузка переменных окружения
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Failed to load .env file")
+	}
+}
+
 type App struct {
 	cfg *config.Config
+	srv *http.Server
 }
 
 func New(cfg *config.Config) *App {
@@ -27,7 +37,7 @@ func New(cfg *config.Config) *App {
 	}
 }
 
-func (a *App) Run() {
+func (a *App) Run(ctx context.Context) {
 	// Подключение к бд
 	db, err := sql.Open(a.cfg.DbOptions.DriverName, a.cfg.DbOptions.DbPath)
 	if err != nil {
@@ -35,14 +45,6 @@ func (a *App) Run() {
 	}
 	db.Exec("PRAGMA FOREIGN_KEYS=ON")
 	defer db.Close()
-
-	// Инициализация логгера
-	logFile, err := os.OpenFile("app.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	log.SetOutput(logFile)
 
 	// Инициализация репозиториев
 	usersRepo := repository.NewUsersRepository(db)
@@ -65,10 +67,6 @@ func (a *App) Run() {
 	usersController.AddEndpoints(mux)
 	tasksController.AddEndpoints(mux)
 
-	// Контексты
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
 	// Запуск рассыльщика
 	listSender := reminder.New(emailSender, usersRepo, tasksRepo)
 	go listSender.StartSending(ctx, a.cfg.ListSenderOptions.Delay*time.Second)
@@ -77,12 +75,16 @@ func (a *App) Run() {
 	addr := ":" + a.cfg.Port
 	fmt.Println("Listening:", a.cfg.Host+addr)
 
-	serv := &http.Server{
+	a.srv = &http.Server{
 		Addr:         addr,
 		Handler:      mux,
 		ReadTimeout:  a.cfg.ReadTimeoutInMilliseconds * time.Millisecond,
 		WriteTimeout: a.cfg.WriteTimeoutInMilliseconds * time.Millisecond,
 	}
 
-	serv.ListenAndServe()
+	a.srv.ListenAndServe()
+}
+
+func (a *App) Shutdown(ctx context.Context) error {
+	return a.srv.Shutdown(ctx)
 }
