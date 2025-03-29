@@ -40,29 +40,29 @@ func NewUsersController(
 
 func (c *UsersController) AddEndpoints(mux *http.ServeMux) {
 	mux.HandleFunc(
-		"POST /new-user",
+		"POST /users/new",
 		mw.UseLogging(c.SendConfirmEmailLink),
 	)
 
 	mux.HandleFunc(
-		"POST /login",
+		"POST /users/login",
 		mw.UseLogging(c.Login),
 	)
 
 	mux.HandleFunc(
-		"GET /confirm-email",
+		"GET /users/confirm-email",
 		mw.UseLogging(c.ConfirmEmail),
 	)
 
 	mux.HandleFunc(
-		"PATCH /subscribe",
+		"PATCH /users/subscribe",
 		mw.UseLogging(c.SubscribeUser),
 	)
 }
 
 // AddUser создаёт нового пользователя в базе данных.
 //
-// Обрабатывает POST запросы по пути '/new-user'.
+// Обрабатывает POST запросы по пути '/users/new'.
 func (c *UsersController) SendConfirmEmailLink(w http.ResponseWriter, r *http.Request) {
 	user, err := readBody[models.User](r.Body)
 	if err != nil {
@@ -89,7 +89,7 @@ func (c *UsersController) SendConfirmEmailLink(w http.ResponseWriter, r *http.Re
 	}
 
 	// Ссылка для подтверждения электронной почты
-	confirmLink := c.cfg.Host + ":" + c.cfg.Port + "/confirm-email?t=" + confirmToken
+	confirmLink := c.cfg.Host + ":" + c.cfg.Port + "/users/confirm-email?t=" + confirmToken
 
 	log.Printf("Sending an email confirmation link to '%s'...\n", user.Email)
 
@@ -106,7 +106,7 @@ func (c *UsersController) SendConfirmEmailLink(w http.ResponseWriter, r *http.Re
 
 // ConfirmEmail является эндпоинтом, на который пользователь попадёт, подтверждая электронную почту.
 //
-// Обрабатывает GET запросы по пути '/confirm-email'.
+// Обрабатывает GET запросы по пути '/users/confirm-email'.
 func (c *UsersController) ConfirmEmail(w http.ResponseWriter, r *http.Request) {
 	token := r.URL.Query().Get("t")
 	if !c.unverifiedUsersRepo.TokenExists(token) {
@@ -135,7 +135,7 @@ func (c *UsersController) ConfirmEmail(w http.ResponseWriter, r *http.Request) {
 
 // SubscribeUser подписывает пользователя с указанным email на рассылку писем.
 //
-// Обрабатывает PATCH запросы по пути '/subscribe'.
+// Обрабатывает PATCH запросы по пути '/users/subscribe'.
 func (c *UsersController) SubscribeUser(w http.ResponseWriter, r *http.Request) {
 	rawJwt := jwtservice.FromHeader(r.Header)
 
@@ -161,7 +161,7 @@ func (c *UsersController) SubscribeUser(w http.ResponseWriter, r *http.Request) 
 
 // Login осуществляет вход уже существующего пользователя в систему.
 //
-// Обрабатывает POST запросы по пути '/login'.
+// Обрабатывает POST запросы по пути '/users/login'.
 func (c *UsersController) Login(w http.ResponseWriter, r *http.Request) {
 	user, err := readBody[models.User](r.Body)
 	if err != nil {

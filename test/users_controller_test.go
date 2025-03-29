@@ -100,7 +100,7 @@ func TestSubscribeUser(t *testing.T) {
 
 	tok := getJwt(t, usersCtrl)
 
-	req, err := http.NewRequest(http.MethodPatch, addr+"/subscribe?subscribe=true", nil)
+	req, err := http.NewRequest(http.MethodPatch, addr+"/users/subscribe?subscribe=true", nil)
 	req.Header.Add("Authorization", "Bearer "+tok)
 	if err != nil {
 		t.Fatal(err)
@@ -125,7 +125,7 @@ func TestLogin(t *testing.T) {
 
 	resRec := httptest.NewRecorder()
 	body := fmt.Appendf(nil, "{\"email\": \"%s\", \"password\": \"%s\"}", mock.email, mock.pwd)
-	req, err := http.NewRequest(http.MethodPost, addr+"/login", bytes.NewReader(body))
+	req, err := http.NewRequest(http.MethodPost, addr+"/users/login", bytes.NewReader(body))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -143,7 +143,7 @@ func TestLogin_UserDoesntExist(t *testing.T) {
 
 	resRec := httptest.NewRecorder()
 	body := fmt.Appendf(nil, "{\"email\": \"%s\", \"password\": \"%s\"}", mock.email, mock.pwd)
-	req, err := http.NewRequest(http.MethodPost, addr+"/login", bytes.NewReader(body))
+	req, err := http.NewRequest(http.MethodPost, addr+"/users/login", bytes.NewReader(body))
 	if err != nil {
 		t.Fatal(err)
 	}
