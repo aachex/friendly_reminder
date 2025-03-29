@@ -57,7 +57,7 @@ func (r *tasksRepository) DeleteTask(ctx context.Context, id int64) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	_, err := r.db.ExecContext(ctx, `DELETE FROM tasks WHERE task_id = $1`, id)
+	_, err := r.db.ExecContext(ctx, "DELETE FROM tasks WHERE task_id = $1", id)
 	return err
 }
 
