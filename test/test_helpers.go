@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"database/sql"
 	"fmt"
-	"log"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -14,7 +13,6 @@ import (
 	"github.com/artemwebber1/friendly_reminder/internal/controller"
 	"github.com/artemwebber1/friendly_reminder/internal/repository"
 	"github.com/artemwebber1/friendly_reminder/pkg/email"
-	"github.com/joho/godotenv"
 )
 
 // mock struct
@@ -30,13 +28,6 @@ var mock = m{
 var cfg = config.NewConfig(`D:\projects\golang\Web\friendly_reminder\config\config.json`)
 
 var addr = cfg.Host + ":" + cfg.Port
-
-func init() {
-	err := godotenv.Load("../.env")
-	if err != nil {
-		log.Fatal("Failed to load .env file")
-	}
-}
 
 func openDb(t *testing.T) *sql.DB {
 	db, err := sql.Open(cfg.DbOptions.DriverName, cfg.DbOptions.DbPath)
@@ -91,5 +82,4 @@ func getEmailSender(emailHost, emailPort string) email.Sender {
 		os.Getenv("EMAIL_PWD"),
 		emailHost,
 		emailPort)
-
 }

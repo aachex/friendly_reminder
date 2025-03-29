@@ -14,17 +14,8 @@ import (
 	"github.com/artemwebber1/friendly_reminder/internal/reminder"
 	"github.com/artemwebber1/friendly_reminder/internal/repository"
 	"github.com/artemwebber1/friendly_reminder/pkg/email"
-	"github.com/joho/godotenv"
 	_ "github.com/mattn/go-sqlite3" // sqlite3 driver
 )
-
-func init() {
-	// Загрузка переменных окружения
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Failed to load .env file")
-	}
-}
 
 type App struct {
 	cfg *config.Config

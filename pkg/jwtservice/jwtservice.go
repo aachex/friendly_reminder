@@ -3,6 +3,7 @@ package jwtservice
 import (
 	"errors"
 	"fmt"
+	"net/http"
 
 	"github.com/golang-jwt/jwt/v5"
 )
@@ -41,4 +42,13 @@ func GetClaims(rawJwt string, key []byte) (jwt.MapClaims, error) {
 	}
 
 	return claims, nil
+}
+
+// FromHeader возвращает закодированный токен из заголовка запроса.
+func FromHeader(h http.Header) string {
+	rawTok := h.Get("Authorization")
+	if len(rawTok) < 8 {
+		return ""
+	}
+	return rawTok[7:] // Отрезаем часть 'Bearer '
 }

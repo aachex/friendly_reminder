@@ -12,7 +12,9 @@ var (
 	errReadingBody = errors.New("error reading request body")
 )
 
-var jwtKey = []byte(os.Getenv("SECRET_STR"))
+func jwtKey() []byte {
+	return []byte(os.Getenv("SECRET_STR"))
+}
 
 func readBody[T any](body io.ReadCloser) (*T, error) {
 	bodyBytes, err := io.ReadAll(body)
@@ -39,12 +41,4 @@ func writeJson[T any](w http.ResponseWriter, obj T) {
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
-}
-
-func getRawJwtFromHeader(h http.Header) string {
-	rawTok := h.Get("Authorization")
-	if len(rawTok) < 8 {
-		return ""
-	}
-	return rawTok[7:] // Отрезаем часть 'Bearer '
 }
