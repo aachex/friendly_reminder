@@ -27,7 +27,7 @@ var mock = m{
 
 var cfg = config.NewConfig(`D:\projects\golang\Web\friendly_reminder\config\config.json`)
 
-var addr = cfg.Host + ":" + cfg.Port
+var addr = cfg.Host + ":" + cfg.Port + "/api/v1/"
 
 func openDb(t *testing.T) *sql.DB {
 	db, err := sql.Open(cfg.DbOptions.DriverName, cfg.DbOptions.DbPath)

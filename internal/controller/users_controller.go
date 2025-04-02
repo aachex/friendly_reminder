@@ -40,22 +40,22 @@ func NewUsersController(
 
 func (c *UsersController) AddEndpoints(mux *http.ServeMux) {
 	mux.HandleFunc(
-		"POST /users/new",
+		"POST /api/v1/users/new",
 		mw.UseLogging(c.SendConfirmEmailLink),
 	)
 
 	mux.HandleFunc(
-		"POST /users/login",
+		"POST /api/v1/users/login",
 		mw.UseLogging(c.Login),
 	)
 
 	mux.HandleFunc(
-		"GET /users/confirm-email",
+		"GET /api/v1/users/confirm-email",
 		mw.UseLogging(c.ConfirmEmail),
 	)
 
 	mux.HandleFunc(
-		"PATCH /users/subscribe",
+		"PATCH /api/v1/users/subscribe",
 		mw.UseLogging(c.SubscribeUser),
 	)
 }

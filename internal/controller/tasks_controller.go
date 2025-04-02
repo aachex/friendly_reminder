@@ -21,22 +21,22 @@ func NewTasksController(tr repository.TasksRepository) *TasksController {
 
 func (c *TasksController) AddEndpoints(mux *http.ServeMux) {
 	mux.HandleFunc(
-		"POST /tasks/new",
+		"POST /api/v1/tasks/new",
 		mw.UseLogging(mw.UseAuthorization(c.CreateTask)),
 	)
 
 	mux.HandleFunc(
-		"GET /tasks/list",
+		"GET /api/v1/tasks/list",
 		mw.UseLogging(mw.UseAuthorization(c.GetList)),
 	)
 
 	mux.HandleFunc(
-		"DELETE /tasks/clear-list",
+		"DELETE /api/v1/tasks/clear-list",
 		mw.UseLogging(mw.UseAuthorization(c.ClearList)),
 	)
 
 	mux.HandleFunc(
-		"DELETE /tasks/del",
+		"DELETE /api/v1/tasks/del",
 		mw.UseLogging(mw.UseAuthorization(c.DeleteTask)),
 	)
 }

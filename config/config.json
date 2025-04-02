@@ -5,7 +5,7 @@
     "writeTimeoutInMilliseconds": 200,
     "dbOptions": {
         "driver": "sqlite3",
-        "path": "D:\\projects\\golang\\Web\\friendly_reminder\\db\\database.db"
+        "path": "D:\\projects\\golang\\Web\\friendly_reminder\\api\\db\\database.db"
     },
     "emailOptions": {
         "emailHost": "smtp.gmail.com",
