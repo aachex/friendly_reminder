@@ -69,8 +69,8 @@ func (a *App) Run(ctx context.Context) {
 	a.srv = &http.Server{
 		Addr:         addr,
 		Handler:      mux,
-		ReadTimeout:  a.cfg.ReadTimeoutInMilliseconds * time.Millisecond,
-		WriteTimeout: a.cfg.WriteTimeoutInMilliseconds * time.Millisecond,
+		ReadTimeout:  a.cfg.ReadTimeout * time.Millisecond,
+		WriteTimeout: a.cfg.WriteTimeout * time.Millisecond,
 	}
 
 	a.srv.ListenAndServe()

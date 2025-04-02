@@ -7,11 +7,11 @@ import (
 )
 
 type Config struct {
-	Host                       string        `json:"host"`
-	Port                       string        `json:"port"`
-	Prefix                     string        `json:"apiPrefix"`
-	ReadTimeoutInMilliseconds  time.Duration `jsom:"readTimeoutInMilliseconds"`
-	WriteTimeoutInMilliseconds time.Duration `jsom:"WriteTimeoutInMilliseconds"`
+	Host         string        `json:"host"`
+	Port         string        `json:"port"`
+	Prefix       string        `json:"apiPrefix"`
+	ReadTimeout  time.Duration `jsom:"readTimeoutInMilliseconds"`
+	WriteTimeout time.Duration `jsom:"WriteTimeoutInMilliseconds"`
 
 	DbOptions struct {
 		DriverName string `json:"driver"`
