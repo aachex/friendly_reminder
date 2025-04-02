@@ -1,0 +1,19 @@
+{
+    "host": "http://localhost",
+    "port": "8080",
+    "apiPrefix": "/api/v1",
+    "readTimeout": 200,
+    "writeTimeout": 200,
+    "dbOptions": {
+        "driver": "sqlite3",
+        "path": "D:\\projects\\golang\\Web\\friendly_reminder\\api\\db\\database.db",
+        "containerDbPath": "/app/database.db"
+    },
+    "emailOptions": {
+        "emailHost": "smtp.gmail.com",
+        "emailPort": "587"
+    },
+    "listSenderOptions": {
+        "delay": 300
+    }
+}
