@@ -25,7 +25,7 @@ var mock = m{
 	pwd:   "password4321",
 }
 
-var cfg = config.NewConfig(`../config/config.json`)
+var cfg = config.NewConfig("../config/config.json")
 
 var addr = cfg.Host + ":" + cfg.Port + cfg.Prefix
 
