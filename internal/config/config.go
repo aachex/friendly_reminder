@@ -14,8 +14,9 @@ type Config struct {
 	WriteTimeout time.Duration `jsom:"writeTimeout"`
 
 	DbOptions struct {
-		DriverName string `json:"driver"`
-		DbPath     string `json:"path"`
+		DriverName      string `json:"driver"`
+		DbPath          string `json:"path"`
+		ContainerDbPath string `json:"containerDbPath"`
 	}
 
 	EmailOptions struct {
