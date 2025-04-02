@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/artemwebber1/friendly_reminder/internal/config"
 	mw "github.com/artemwebber1/friendly_reminder/internal/middleware"
 	"github.com/artemwebber1/friendly_reminder/internal/repository"
 	"github.com/artemwebber1/friendly_reminder/pkg/jwtservice"
@@ -11,32 +12,34 @@ import (
 
 type TasksController struct {
 	tasksRepo repository.TasksRepository
+	cfg       *config.Config
 }
 
-func NewTasksController(tr repository.TasksRepository) *TasksController {
+func NewTasksController(tr repository.TasksRepository, cfg *config.Config) *TasksController {
 	return &TasksController{
 		tasksRepo: tr,
+		cfg:       cfg,
 	}
 }
 
 func (c *TasksController) AddEndpoints(mux *http.ServeMux) {
 	mux.HandleFunc(
-		"POST /api/v1/tasks/new",
+		"POST "+c.cfg.Prefix+"/tasks/new",
 		mw.UseLogging(mw.UseAuthorization(c.CreateTask)),
 	)
 
 	mux.HandleFunc(
-		"GET /api/v1/tasks/list",
+		"GET "+c.cfg.Prefix+"/tasks/list",
 		mw.UseLogging(mw.UseAuthorization(c.GetList)),
 	)
 
 	mux.HandleFunc(
-		"DELETE /api/v1/tasks/clear-list",
+		"DELETE "+c.cfg.Prefix+"/tasks/clear-list",
 		mw.UseLogging(mw.UseAuthorization(c.ClearList)),
 	)
 
 	mux.HandleFunc(
-		"DELETE /api/v1/tasks/del",
+		"DELETE "+c.cfg.Prefix+"/tasks/del",
 		mw.UseLogging(mw.UseAuthorization(c.DeleteTask)),
 	)
 }

@@ -1,6 +1,7 @@
 {
     "host": "http://localhost",
     "port": "8080",
+    "apiPrefix": "/api/v1",
     "readTimeoutInMilliseconds": 200,
     "writeTimeoutInMilliseconds": 200,
     "dbOptions": {

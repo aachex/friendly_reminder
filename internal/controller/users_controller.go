@@ -40,7 +40,7 @@ func NewUsersController(
 
 func (c *UsersController) AddEndpoints(mux *http.ServeMux) {
 	mux.HandleFunc(
-		"POST /api/v1/users/new",
+		"POST "+c.cfg.Prefix+"/users/new",
 		mw.UseLogging(c.SendConfirmEmailLink),
 	)
 
@@ -50,12 +50,12 @@ func (c *UsersController) AddEndpoints(mux *http.ServeMux) {
 	)
 
 	mux.HandleFunc(
-		"GET /api/v1/users/confirm-email",
+		"GET "+c.cfg.Prefix+"/users/confirm-email",
 		mw.UseLogging(c.ConfirmEmail),
 	)
 
 	mux.HandleFunc(
-		"PATCH /api/v1/users/subscribe",
+		"PATCH "+c.cfg.Prefix+"/users/subscribe",
 		mw.UseLogging(c.SubscribeUser),
 	)
 }
@@ -89,7 +89,7 @@ func (c *UsersController) SendConfirmEmailLink(w http.ResponseWriter, r *http.Re
 	}
 
 	// Ссылка для подтверждения электронной почты
-	confirmLink := c.cfg.Host + ":" + c.cfg.Port + "/users/confirm-email?t=" + confirmToken
+	confirmLink := c.cfg.Host + ":" + c.cfg.Port + c.cfg.Prefix + "/users/confirm-email?t=" + confirmToken
 
 	log.Printf("Sending an email confirmation link to '%s'...\n", user.Email)
 

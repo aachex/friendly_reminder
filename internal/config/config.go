@@ -9,6 +9,7 @@ import (
 type Config struct {
 	Host                       string        `json:"host"`
 	Port                       string        `json:"port"`
+	Prefix                     string        `json:"apiPrefix"`
 	ReadTimeoutInMilliseconds  time.Duration `jsom:"readTimeoutInMilliseconds"`
 	WriteTimeoutInMilliseconds time.Duration `jsom:"WriteTimeoutInMilliseconds"`
 

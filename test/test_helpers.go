@@ -27,7 +27,7 @@ var mock = m{
 
 var cfg = config.NewConfig(`../config/config.json`)
 
-var addr = cfg.Host + ":" + cfg.Port + "/api/v1/"
+var addr = cfg.Host + ":" + cfg.Port + cfg.Prefix
 
 func openDb(t *testing.T) *sql.DB {
 	db, err := sql.Open(cfg.DbOptions.DriverName, cfg.DbOptions.DbPath)
@@ -73,7 +73,7 @@ func getUsersController(db *sql.DB) *controller.UsersController {
 
 func getTasksController(db *sql.DB) *controller.TasksController {
 	tr := repository.NewTasksRepository(db)
-	return controller.NewTasksController(tr)
+	return controller.NewTasksController(tr, cfg)
 }
 
 func getEmailSender(emailHost, emailPort string) email.Sender {
