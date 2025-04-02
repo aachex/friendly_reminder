@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"os/signal"
 	"time"
 
 	"github.com/artemwebber1/friendly_reminder/internal/app"
 	"github.com/artemwebber1/friendly_reminder/internal/config"
+	"github.com/artemwebber1/friendly_reminder/pkg/graceful"
 	"github.com/joho/godotenv"
 )
 
@@ -30,15 +30,12 @@ func main() {
 	defer logFile.Close()
 	log.SetOutput(logFile)
 
-	interrupt := make(chan os.Signal, 1)
-	signal.Notify(interrupt, os.Interrupt)
-
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	app := app.New(cfg)
 	go app.Run(ctx)
 
-	<-interrupt
+	graceful.WaitShutdown()
 
 	fmt.Println("Shutdown")
 	log.Println("Shutdown")

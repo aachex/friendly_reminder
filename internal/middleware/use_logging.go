@@ -3,6 +3,8 @@ package middleware
 import (
 	"log"
 	"net/http"
+
+	"github.com/artemwebber1/friendly_reminder/pkg/graceful"
 )
 
 type loggingResponseWriter struct {
@@ -37,7 +39,8 @@ func UseLogging(next http.HandlerFunc) http.HandlerFunc {
 		log.Printf("Request to endpoint '%s' processed. Status code: %d", r.Pattern, lrw.statusCode)
 
 		if lrw.statusCode == http.StatusInternalServerError {
-			log.Fatal(string(lrw.body))
+			log.Println(string(lrw.body))
+			graceful.Shutdown()
 		}
 	}
 }

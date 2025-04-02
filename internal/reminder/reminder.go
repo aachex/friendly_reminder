@@ -8,6 +8,7 @@ import (
 
 	"github.com/artemwebber1/friendly_reminder/internal/repository"
 	"github.com/artemwebber1/friendly_reminder/pkg/email"
+	"github.com/artemwebber1/friendly_reminder/pkg/graceful"
 )
 
 // Reminder представляет собой объект, который в отдельной горутине
@@ -39,7 +40,8 @@ func (s *defaultReminder) StartSending(ctx context.Context, d time.Duration) {
 		log.Println("Sending emails")
 		emails, err := s.usersRepo.GetEmailsSubscribed(ctx)
 		if err != nil {
-			log.Fatal(err)
+			log.Println(err)
+			graceful.Shutdown()
 		}
 
 		for _, email := range emails {
@@ -59,7 +61,8 @@ func (s *defaultReminder) sendList(ctx context.Context, email string) {
 	// Получаем список пользователя
 	list, err := s.tasksRepo.GetList(ctx, email)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
+		graceful.Shutdown()
 	}
 
 	// Преобразуем слайс list в строку вида:
@@ -81,6 +84,7 @@ func (s *defaultReminder) sendList(ctx context.Context, email string) {
 	}
 
 	if err = s.sender.Send(subject, body, email); err != nil {
-		log.Fatal(err)
+		log.Println(err)
+		graceful.Shutdown()
 	}
 }
