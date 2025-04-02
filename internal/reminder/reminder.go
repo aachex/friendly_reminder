@@ -6,7 +6,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/artemwebber1/friendly_reminder/internal/repository"
+	"github.com/artemwebber1/friendly_reminder/internal/models"
 	"github.com/artemwebber1/friendly_reminder/pkg/email"
 	"github.com/artemwebber1/friendly_reminder/pkg/graceful"
 )
@@ -19,13 +19,22 @@ type Reminder interface {
 	StartSending(ctx context.Context, d time.Duration)
 }
 
-type defaultReminder struct {
-	sender    email.Sender // Для отправки электронных писем
-	usersRepo repository.UsersRepository
-	tasksRepo repository.TasksRepository
+type tasksRepository interface {
+	GetList(ctx context.Context, userEmail string) ([]models.Task, error)
 }
 
-func New(s email.Sender, ur repository.UsersRepository, tr repository.TasksRepository) Reminder {
+type usersRepository interface {
+	GetEmailsSubscribed(ctx context.Context) ([]string, error)
+	Subscribe(ctx context.Context, email string, subscr bool) error
+}
+
+type defaultReminder struct {
+	sender    email.Sender // Для отправки электронных писем
+	usersRepo usersRepository
+	tasksRepo tasksRepository
+}
+
+func New(s email.Sender, ur usersRepository, tr tasksRepository) Reminder {
 	return &defaultReminder{
 		sender:    s,
 		usersRepo: ur,

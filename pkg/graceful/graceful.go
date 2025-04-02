@@ -14,11 +14,13 @@ func init() {
 }
 
 // WaitShutdown блокирует текущую горутину до получения сигнала [os.Interrupt].
+// Функция ждёт, когда во внутренний канал interrupt будет записано значение.
 func WaitShutdown() {
 	<-interrupt
 }
 
 // Shutdown записывает сигнал [os.Interrupt] во внутренний канал interrupt.
+// Таким образом, метод WaitShutdown будет выполнен и приложение перейдет в состояние завершения работы.
 func Shutdown() {
 	interrupt <- os.Interrupt
 }

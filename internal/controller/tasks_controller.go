@@ -1,22 +1,37 @@
 package controller
 
 import (
+	"context"
 	"net/http"
 	"strconv"
 
 	"github.com/artemwebber1/friendly_reminder/internal/config"
 	mw "github.com/artemwebber1/friendly_reminder/internal/middleware"
-	"github.com/artemwebber1/friendly_reminder/internal/repository"
+	"github.com/artemwebber1/friendly_reminder/internal/models"
 	"github.com/artemwebber1/friendly_reminder/pkg/jwtservice"
 )
 
+type tasksRepository interface {
+	// AddItem добавляет новую задачу в список пользователя. Возвращает id созданной задачи.
+	AddTask(ctx context.Context, value, userEmail string) (int64, error)
+
+	// DeleteTask удаляет задачу по указанному id.
+	DeleteTask(ctx context.Context, id int64) error
+
+	// GetList возвращает список дел пользователя с указанным email.
+	GetList(ctx context.Context, userEmail string) ([]models.Task, error)
+
+	// ClearList очищает список указанного пользователя.
+	ClearList(ctx context.Context, userEmail string) error
+}
+
 type TasksController struct {
-	tasksRepo repository.TasksRepository
-	usersRepo repository.UsersRepository
+	tasksRepo tasksRepository
+	usersRepo usersRepository
 	cfg       *config.Config
 }
 
-func NewTasksController(tr repository.TasksRepository, ur repository.UsersRepository, cfg *config.Config) *TasksController {
+func NewTasksController(tr tasksRepository, ur usersRepository, cfg *config.Config) *TasksController {
 	return &TasksController{
 		tasksRepo: tr,
 		usersRepo: ur,

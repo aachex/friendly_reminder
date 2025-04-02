@@ -6,36 +6,13 @@ import (
 	"sync"
 )
 
-type UsersRepository interface {
-	// AddUser добавляет нового пользователя.
-	//
-	// Возвращает id нового пользователя и ошибку.
-	AddUser(ctx context.Context, email, password string) (int64, error)
-
-	// DeleteUser удаляет пользователя из базы данных.
-	DeleteUser(ctx context.Context, email string) error
-
-	// Subscribe подписывает пользователя на рассылку электронных писем.
-	// Если параметр subscribe = true, пользователь будет подписан на рассылку, иначе будет отписан.
-	Subscribe(ctx context.Context, email string, subscr bool) error
-
-	// GetEmailsSubscribed возвращает список зарегестрированных электронных почт пользователей, подписанных на рассылку.
-	GetEmailsSubscribed(ctx context.Context) ([]string, error)
-
-	// EmailExists возвращает true если пользователь с данной электронной почтой уже существует.
-	EmailExists(ctx context.Context, email string) bool
-
-	// UserExists возвращает true, если существует пользователь с указанной почтой и паролем.
-	UserExists(ctx context.Context, email, password string) bool
-}
-
-type usersRepository struct {
+type UsersRepository struct {
 	mu sync.Mutex
 	db *sql.DB
 }
 
-func NewUsersRepository(db *sql.DB) UsersRepository {
-	return &usersRepository{
+func NewUsersRepository(db *sql.DB) *UsersRepository {
+	return &UsersRepository{
 		db: db,
 		mu: sync.Mutex{},
 	}
@@ -44,7 +21,7 @@ func NewUsersRepository(db *sql.DB) UsersRepository {
 // AddUser добавляет нового пользователя.
 //
 // Возвращает id нового пользователя и ошибку.
-func (r *usersRepository) AddUser(ctx context.Context, email, password string) (id int64, err error) {
+func (r *UsersRepository) AddUser(ctx context.Context, email, password string) (id int64, err error) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
@@ -60,7 +37,7 @@ func (r *usersRepository) AddUser(ctx context.Context, email, password string) (
 }
 
 // DeleteUser удаляет пользователя из базы данных.
-func (r *usersRepository) DeleteUser(ctx context.Context, email string) error {
+func (r *UsersRepository) DeleteUser(ctx context.Context, email string) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
@@ -70,7 +47,7 @@ func (r *usersRepository) DeleteUser(ctx context.Context, email string) error {
 
 // Subscribe подписывает пользователя на рассылку электронных писем.
 // Если параметр subscribe = true, пользователь будет подписан на рассылку, иначе будет отписан.
-func (r *usersRepository) Subscribe(ctx context.Context, email string, subscribe bool) error {
+func (r *UsersRepository) Subscribe(ctx context.Context, email string, subscribe bool) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
@@ -79,7 +56,7 @@ func (r *usersRepository) Subscribe(ctx context.Context, email string, subscribe
 }
 
 // GetEmailsSubscribed возвращает список зарегестрированных электронных почт пользователей, подписанных на рассылку.
-func (r *usersRepository) GetEmailsSubscribed(ctx context.Context) (emails []string, err error) {
+func (r *UsersRepository) GetEmailsSubscribed(ctx context.Context) (emails []string, err error) {
 	rows, err := r.db.QueryContext(ctx, "SELECT email FROM users WHERE subscribed = 1")
 	if err != nil {
 		return nil, err
@@ -99,13 +76,13 @@ func (r *usersRepository) GetEmailsSubscribed(ctx context.Context) (emails []str
 }
 
 // EmailExists возвращает true если пользователь с данной электронной почтой уже существует.
-func (r *usersRepository) EmailExists(ctx context.Context, email string) bool {
+func (r *UsersRepository) EmailExists(ctx context.Context, email string) bool {
 	row := r.db.QueryRowContext(ctx, "SELECT email FROM users WHERE email = $1", email)
 	return row.Scan() != sql.ErrNoRows
 }
 
 // UserExists возвращает true, если существует пользователь с указанной почтой и паролем.
-func (r *usersRepository) UserExists(ctx context.Context, email, password string) bool {
+func (r *UsersRepository) UserExists(ctx context.Context, email, password string) bool {
 	row := r.db.QueryRowContext(ctx, "SELECT email, password FROM users WHERE email = $1 AND password = $2", email, password)
 	return row.Scan() != sql.ErrNoRows
 }

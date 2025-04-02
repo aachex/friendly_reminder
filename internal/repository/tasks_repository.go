@@ -8,34 +8,20 @@ import (
 	"github.com/artemwebber1/friendly_reminder/internal/models"
 )
 
-type TasksRepository interface {
-	// AddItem добавляет новую задачу в список пользователя. Возвращает id созданной задачи.
-	AddTask(ctx context.Context, value, userEmail string) (int64, error)
-
-	// DeleteTask удаляет задачу по указанному id.
-	DeleteTask(ctx context.Context, id int64) error
-
-	// GetList возвращает список дел пользователя с указанным email.
-	GetList(ctx context.Context, userEmail string) ([]models.Task, error)
-
-	// ClearList очищает список указанного пользователя.
-	ClearList(ctx context.Context, userEmail string) error
-}
-
-type tasksRepository struct {
+type TasksRepository struct {
 	mu sync.Mutex
 	db *sql.DB
 }
 
-func NewTasksRepository(db *sql.DB) TasksRepository {
-	return &tasksRepository{
+func NewTasksRepository(db *sql.DB) *TasksRepository {
+	return &TasksRepository{
 		db: db,
 		mu: sync.Mutex{},
 	}
 }
 
 // AddItem добавляет новую задачу в список пользователя. Возвращает id созданноё задачи.
-func (r *tasksRepository) AddTask(ctx context.Context, value, userEmail string) (int64, error) {
+func (r *TasksRepository) AddTask(ctx context.Context, value, userEmail string) (int64, error) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
@@ -53,7 +39,7 @@ func (r *tasksRepository) AddTask(ctx context.Context, value, userEmail string) 
 }
 
 // DeleteTask удаляет задачу по указанному id.
-func (r *tasksRepository) DeleteTask(ctx context.Context, id int64) error {
+func (r *TasksRepository) DeleteTask(ctx context.Context, id int64) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
@@ -62,7 +48,7 @@ func (r *tasksRepository) DeleteTask(ctx context.Context, id int64) error {
 }
 
 // GetList возвращает список дел пользователя с указанным email.
-func (r *tasksRepository) GetList(ctx context.Context, userEmail string) ([]models.Task, error) {
+func (r *TasksRepository) GetList(ctx context.Context, userEmail string) ([]models.Task, error) {
 	rows, err := r.db.QueryContext(ctx, "SELECT * FROM tasks WHERE user_email = $1", userEmail)
 	if err != nil {
 		return []models.Task{}, err
@@ -79,7 +65,7 @@ func (r *tasksRepository) GetList(ctx context.Context, userEmail string) ([]mode
 }
 
 // ClearList очищает список указанного пользователя.
-func (r *tasksRepository) ClearList(ctx context.Context, userEmail string) error {
+func (r *TasksRepository) ClearList(ctx context.Context, userEmail string) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 

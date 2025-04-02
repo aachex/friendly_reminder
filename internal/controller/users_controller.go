@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net/http"
@@ -11,23 +12,70 @@ import (
 	"github.com/artemwebber1/friendly_reminder/internal/hasher"
 	mw "github.com/artemwebber1/friendly_reminder/internal/middleware"
 	"github.com/artemwebber1/friendly_reminder/internal/models"
-	"github.com/artemwebber1/friendly_reminder/internal/repository"
 	"github.com/artemwebber1/friendly_reminder/pkg/email"
 	"github.com/artemwebber1/friendly_reminder/pkg/jwtservice"
 	"github.com/golang-jwt/jwt/v5"
 )
 
+type usersRepository interface {
+	// AddUser добавляет нового пользователя.
+	//
+	// Возвращает id нового пользователя и ошибку.
+	AddUser(ctx context.Context, email, password string) (int64, error)
+
+	// DeleteUser удаляет пользователя из базы данных.
+	DeleteUser(ctx context.Context, email string) error
+
+	// Subscribe подписывает пользователя на рассылку электронных писем.
+	// Если параметр subscribe = true, пользователь будет подписан на рассылку, иначе будет отписан.
+	Subscribe(ctx context.Context, email string, subscr bool) error
+
+	// GetEmailsSubscribed возвращает список зарегестрированных электронных почт пользователей, подписанных на рассылку.
+	GetEmailsSubscribed(ctx context.Context) ([]string, error)
+
+	// EmailExists возвращает true если пользователь с данной электронной почтой уже существует.
+	EmailExists(ctx context.Context, email string) bool
+
+	// UserExists возвращает true, если существует пользователь с указанной почтой и паролем.
+	UserExists(ctx context.Context, email, password string) bool
+}
+
+// unverifiedUsersRepository является репозиторием неверифицированных пользователей.
+//
+// Неверифицированный пользователь - это пользователь, который
+// регистрировался в системе, но не подтвердил электронную почту.
+type unverifiedUsersRepository interface {
+	// TokenExists возвращает true если существует указанный токен для подтверждения электронной почты.
+	TokenExists(t string) bool
+
+	// CreateToken добавляет пользователя в базу данных, как не подтвердившего электронную почту, и создаёт токен для подтверждения.
+	// Возвращает сам токен и ошибку.
+	CreateToken(email, pwd string) (string, error)
+
+	// DeleteToken удаляет токен из базы данных.
+	DeleteToken(token string) error
+
+	// UpdateToken создаёт новый токен для пользователя с указанным email.
+	UpdateToken(email string) (string, error)
+
+	// HasToken возвращает true, если для указанной электронной почты уже сгенерирован токен.
+	HasToken(email string) bool
+
+	// GetUserByToken получает пользователя по токену.
+	GetUserByToken(token string) (models.User, error)
+}
+
 type UsersController struct {
 	emailSender email.Sender
 	cfg         *config.Config
 
-	usersRepo           repository.UsersRepository
-	unverifiedUsersRepo repository.UnverifiedUsersRepository
+	usersRepo           usersRepository
+	unverifiedUsersRepo unverifiedUsersRepository
 }
 
 func NewUsersController(
-	ur repository.UsersRepository,
-	uur repository.UnverifiedUsersRepository,
+	ur usersRepository,
+	uur unverifiedUsersRepository,
 	emailSender email.Sender,
 	cfg *config.Config) *UsersController {
 	return &UsersController{
