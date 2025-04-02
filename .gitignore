@@ -23,5 +23,6 @@ go.work.sum
 
 # database
 /db
+*.db
 
 *.log
