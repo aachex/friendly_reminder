@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"os/signal"
 	"time"
 
 	"github.com/artemwebber1/friendly_reminder/internal/app"
 	"github.com/artemwebber1/friendly_reminder/internal/config"
-	"github.com/artemwebber1/friendly_reminder/pkg/graceful"
 	"github.com/joho/godotenv"
 )
 
@@ -21,7 +21,7 @@ func main() {
 	}
 
 	// Конфигурация
-	cfg := config.NewConfig(`config\config.json`)
+	cfg := config.NewConfig("./config/config.json")
 
 	logFile, err := os.OpenFile("app.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
 	if err != nil {
@@ -30,17 +30,19 @@ func main() {
 	defer logFile.Close()
 	log.SetOutput(logFile)
 
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
+	bg := context.Background()
+	ctx, stop := signal.NotifyContext(bg, os.Interrupt)
+	defer stop()
+
 	app := app.New(cfg)
 	go app.Run(ctx)
 
-	graceful.WaitShutdown()
+	<-ctx.Done()
 
 	fmt.Println("Shutdown")
 	log.Println("Shutdown")
 
-	shutdownCtx, cancel := context.WithTimeout(ctx, time.Second*5)
+	shutdownCtx, cancel := context.WithTimeout(bg, time.Second*5)
 	defer cancel()
 
 	err = app.Shutdown(shutdownCtx)
