@@ -48,9 +48,8 @@ func TestCreateTask(t *testing.T) {
 
 	usersRepo := repository.NewUsersRepository(db)
 	usersRepo.AddUser(t.Context(), mock.email, hasher.Hash(mock.pwd))
-	tok := getJwt(t, getUsersController(db))
 
-	req.Header.Add("Authorization", "Bearer "+tok)
+	req.Header.Add("Authorization", "Bearer "+getJwt(t, getUsersController(db)))
 	tasksCtrl.CreateTask(resRec, req)
 
 	if resRec.Result().StatusCode != http.StatusCreated {
@@ -83,6 +82,7 @@ func TestDeleteTask(t *testing.T) {
 
 	resRec := httptest.NewRecorder()
 
+	req.Header.Add("Authorization", "Bearer "+getJwt(t, getUsersController(db)))
 	tasksCtrl := getTasksController(db)
 	tasksCtrl.DeleteTask(resRec, req)
 

@@ -73,7 +73,8 @@ func getUsersController(db *sql.DB) *controller.UsersController {
 
 func getTasksController(db *sql.DB) *controller.TasksController {
 	tr := repository.NewTasksRepository(db)
-	return controller.NewTasksController(tr, cfg)
+	ur := repository.NewUsersRepository(db)
+	return controller.NewTasksController(tr, ur, cfg)
 }
 
 func getEmailSender(emailHost, emailPort string) email.Sender {

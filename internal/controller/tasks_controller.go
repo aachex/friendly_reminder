@@ -12,12 +12,14 @@ import (
 
 type TasksController struct {
 	tasksRepo repository.TasksRepository
+	usersRepo repository.UsersRepository
 	cfg       *config.Config
 }
 
-func NewTasksController(tr repository.TasksRepository, cfg *config.Config) *TasksController {
+func NewTasksController(tr repository.TasksRepository, ur repository.UsersRepository, cfg *config.Config) *TasksController {
 	return &TasksController{
 		tasksRepo: tr,
+		usersRepo: ur,
 		cfg:       cfg,
 	}
 }
@@ -61,6 +63,11 @@ func (c *TasksController) CreateTask(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if !c.usersRepo.EmailExists(r.Context(), email) {
+		http.Error(w, errInvalidInvalidEmail.Error(), http.StatusForbidden)
+		return
+	}
+
 	type newTask struct {
 		Id    int64  `json:"task_id"`
 		Value string `json:"value"`
@@ -101,6 +108,11 @@ func (c *TasksController) GetList(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if !c.usersRepo.EmailExists(r.Context(), email) {
+		http.Error(w, errInvalidInvalidEmail.Error(), http.StatusForbidden)
+		return
+	}
+
 	list, err := c.tasksRepo.GetList(r.Context(), email)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -127,6 +139,11 @@ func (c *TasksController) ClearList(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if !c.usersRepo.EmailExists(r.Context(), email) {
+		http.Error(w, errInvalidInvalidEmail.Error(), http.StatusForbidden)
+		return
+	}
+
 	err = c.tasksRepo.ClearList(r.Context(), email)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -138,6 +155,24 @@ func (c *TasksController) ClearList(w http.ResponseWriter, r *http.Request) {
 //
 // Обрабатывает DELETE запросы по пути '/tasks/del'.
 func (c *TasksController) DeleteTask(w http.ResponseWriter, r *http.Request) {
+	rawJwt := jwtservice.FromHeader(r.Header)
+	jwtClaims, err := jwtservice.GetClaims(rawJwt, jwtKey())
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusForbidden)
+		return
+	}
+
+	email, err := jwtClaims.GetSubject()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusForbidden)
+		return
+	}
+
+	if !c.usersRepo.EmailExists(r.Context(), email) {
+		http.Error(w, errInvalidInvalidEmail.Error(), http.StatusForbidden)
+		return
+	}
+
 	taskId, err := strconv.ParseInt(r.URL.Query().Get("id"), 10, 64)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)

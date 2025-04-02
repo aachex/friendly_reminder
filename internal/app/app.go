@@ -53,7 +53,7 @@ func (a *App) Run(ctx context.Context) {
 	// Создание контроллеров и добавление эндпоинтов
 	mux := http.NewServeMux()
 	usersController := controller.NewUsersController(usersRepo, unverifiedUsersRepo, emailSender, a.cfg)
-	tasksController := controller.NewTasksController(tasksRepo, a.cfg)
+	tasksController := controller.NewTasksController(tasksRepo, usersRepo, a.cfg)
 
 	usersController.AddEndpoints(mux)
 	tasksController.AddEndpoints(mux)

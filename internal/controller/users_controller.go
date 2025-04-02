@@ -56,7 +56,7 @@ func (c *UsersController) AddEndpoints(mux *http.ServeMux) {
 
 	mux.HandleFunc(
 		"PATCH "+c.cfg.Prefix+"/users/subscribe",
-		mw.UseLogging(c.SubscribeUser),
+		mw.UseLogging(mw.UseAuthorization(c.SubscribeUser)),
 	)
 }
 
@@ -145,9 +145,14 @@ func (c *UsersController) SubscribeUser(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	userEmail, err := jwtClaims.GetSubject()
+	email, err := jwtClaims.GetSubject()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusForbidden)
+		return
+	}
+
+	if !c.usersRepo.EmailExists(r.Context(), email) {
+		http.Error(w, errInvalidInvalidEmail.Error(), http.StatusForbidden)
 		return
 	}
 
@@ -156,7 +161,7 @@ func (c *UsersController) SubscribeUser(w http.ResponseWriter, r *http.Request) 
 		http.Error(w, "invalid value for 'subscribe' param", http.StatusBadRequest)
 		return
 	}
-	c.usersRepo.Subscribe(r.Context(), userEmail, subscribe)
+	c.usersRepo.Subscribe(r.Context(), email, subscribe)
 }
 
 // Login осуществляет вход уже существующего пользователя в систему.

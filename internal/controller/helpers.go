@@ -9,7 +9,8 @@ import (
 )
 
 var (
-	errReadingBody = errors.New("error reading request body")
+	errReadingBody         = errors.New("error reading request body")
+	errInvalidInvalidEmail = errors.New("invalid email")
 )
 
 func jwtKey() []byte {
