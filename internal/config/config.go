@@ -10,8 +10,8 @@ type Config struct {
 	Host         string        `json:"host"`
 	Port         string        `json:"port"`
 	Prefix       string        `json:"apiPrefix"`
-	ReadTimeout  time.Duration `jsom:"readTimeoutInMilliseconds"`
-	WriteTimeout time.Duration `jsom:"WriteTimeoutInMilliseconds"`
+	ReadTimeout  time.Duration `jsom:"readTimeout"`
+	WriteTimeout time.Duration `jsom:"writeTimeout"`
 
 	DbOptions struct {
 		DriverName string `json:"driver"`
@@ -24,7 +24,7 @@ type Config struct {
 	} `json:"emailOptions"`
 
 	ListSenderOptions struct {
-		Delay time.Duration `json:"delayInSeconds"`
+		Delay time.Duration `json:"delay"`
 	} `json:"listSenderOptions"`
 }
 
