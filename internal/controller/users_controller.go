@@ -30,9 +30,6 @@ type usersRepository interface {
 	// Если параметр subscribe = true, пользователь будет подписан на рассылку, иначе будет отписан.
 	Subscribe(ctx context.Context, email string, subscr bool) error
 
-	// GetEmailsSubscribed возвращает список зарегестрированных электронных почт пользователей, подписанных на рассылку.
-	GetEmailsSubscribed(ctx context.Context) ([]string, error)
-
 	// EmailExists возвращает true если пользователь с данной электронной почтой уже существует.
 	EmailExists(ctx context.Context, email string) bool
 
@@ -93,7 +90,7 @@ func (c *UsersController) AddEndpoints(mux *http.ServeMux) {
 	)
 
 	mux.HandleFunc(
-		"POST /api/v1/users/login",
+		"POST "+c.cfg.Prefix+"/users/login",
 		mw.UseLogging(c.Login),
 	)
 
