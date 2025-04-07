@@ -38,7 +38,7 @@ func init() {
 	}
 
 	cfg = config.NewConfig("../config/config.json")
-	dbUsed = cfg.Sqlite3
+	dbUsed = cfg.Database.Sqlite3
 	addr = cfg.Host + ":" + cfg.Port + cfg.Prefix
 }
 

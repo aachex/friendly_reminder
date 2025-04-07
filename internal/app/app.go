@@ -30,7 +30,7 @@ func New(cfg *config.Config) *App {
 
 func (a *App) Run(ctx context.Context) {
 	// Подключение к бд
-	dbUsed := a.cfg.Sqlite3
+	dbUsed := a.cfg.Database.Sqlite3
 	db, err := sql.Open(dbUsed.DriverName, os.Getenv(dbUsed.ConnStrEnv))
 	if err != nil {
 		log.Fatal(err)

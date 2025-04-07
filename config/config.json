@@ -4,9 +4,15 @@
     "apiPrefix": "/api/v1",
     "readTimeout": 200,
     "writeTimeout": 200,
-    "sqlite3": {
-        "driver": "sqlite3",
-        "connStrEnv": "SQLITE3_CONN_STR"
+    "database": {
+        "sqlite3": {
+            "driver": "sqlite3",
+            "connStrEnv": "SQLITE3_CONN_STR"
+        },
+        "postgres": {
+            "driver": "postgres",
+            "connStrEnv": "POSTGRES_CONN_STR"
+        }
     },
     "emailOptions": {
         "emailHost": "smtp.gmail.com",
