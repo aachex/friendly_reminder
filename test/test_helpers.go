@@ -15,6 +15,8 @@ import (
 	"github.com/artemwebber1/friendly_reminder/internal/repository"
 	"github.com/artemwebber1/friendly_reminder/pkg/email"
 	"github.com/joho/godotenv"
+	_ "github.com/lib/pq"           // postgres driver
+	_ "github.com/mattn/go-sqlite3" // sqlite3 driver
 )
 
 // mock struct
