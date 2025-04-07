@@ -13,11 +13,7 @@ type Config struct {
 	ReadTimeout  time.Duration `jsom:"readTimeout"`
 	WriteTimeout time.Duration `jsom:"writeTimeout"`
 
-	DbOptions struct {
-		DriverName      string `json:"driver"`
-		DbPath          string `json:"path"`
-		ContainerDbPath string `json:"containerDbPath"`
-	}
+	Sqlite3 database `json:"sqlite3"`
 
 	EmailOptions struct {
 		Host string `json:"emailHost"`
@@ -38,4 +34,9 @@ func NewConfig(path string) *Config {
 	var conf Config
 	json.Unmarshal(fileContent, &conf)
 	return &conf
+}
+
+type database struct {
+	DriverName string `json:"driver"`
+	ConnStr    string `json:"connStr"`
 }

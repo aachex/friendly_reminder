@@ -4,10 +4,9 @@
     "apiPrefix": "/api/v1",
     "readTimeout": 200,
     "writeTimeout": 200,
-    "dbOptions": {
+    "sqlite3": {
         "driver": "sqlite3",
-        "path": "D:\\projects\\golang\\Web\\friendly_reminder\\api\\db\\database.db",
-        "containerDbPath": "/app/database.db"
+        "connStr": "D:\\projects\\golang\\Web\\friendly_reminder\\api\\db\\database.db"
     },
     "emailOptions": {
         "emailHost": "smtp.gmail.com",

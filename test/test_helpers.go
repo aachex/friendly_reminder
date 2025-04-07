@@ -26,11 +26,11 @@ var mock = m{
 }
 
 var cfg = config.NewConfig("../config/config.json")
-
+var dbUsed = cfg.Sqlite3
 var addr = cfg.Host + ":" + cfg.Port + cfg.Prefix
 
 func openDb(t *testing.T) *sql.DB {
-	db, err := sql.Open(cfg.DbOptions.DriverName, cfg.DbOptions.DbPath)
+	db, err := sql.Open(dbUsed.DriverName, dbUsed.ConnStr)
 	if err != nil {
 		t.Fatal(err)
 	}
