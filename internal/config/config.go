@@ -6,6 +6,11 @@ import (
 	"time"
 )
 
+type DbConfig struct {
+	DriverName string `json:"driver"`
+	ConnStrEnv string `json:"connStrEnv"`
+}
+
 type Config struct {
 	Host         string        `json:"host"`
 	Port         string        `json:"port"`
@@ -13,7 +18,7 @@ type Config struct {
 	ReadTimeout  time.Duration `jsom:"readTimeout"`
 	WriteTimeout time.Duration `jsom:"writeTimeout"`
 
-	Sqlite3 database `json:"sqlite3"`
+	Sqlite3 DbConfig `json:"sqlite3"`
 
 	EmailOptions struct {
 		Host string `json:"emailHost"`
@@ -34,9 +39,4 @@ func NewConfig(path string) *Config {
 	var conf Config
 	json.Unmarshal(fileContent, &conf)
 	return &conf
-}
-
-type database struct {
-	DriverName string `json:"driver"`
-	ConnStr    string `json:"connStr"`
 }
