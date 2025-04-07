@@ -6,7 +6,7 @@
     "writeTimeout": 200,
     "sqlite3": {
         "driver": "sqlite3",
-        "connStr": "D:\\projects\\golang\\Web\\friendly_reminder\\api\\db\\database.db"
+        "connStrEnv": "SQLITE3_CONN_STR"
     },
     "emailOptions": {
         "emailHost": "smtp.gmail.com",

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"database/sql"
 	"fmt"
+	"log"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -13,6 +14,7 @@ import (
 	"github.com/artemwebber1/friendly_reminder/internal/controller"
 	"github.com/artemwebber1/friendly_reminder/internal/repository"
 	"github.com/artemwebber1/friendly_reminder/pkg/email"
+	"github.com/joho/godotenv"
 )
 
 // mock struct
@@ -25,12 +27,23 @@ var mock = m{
 	pwd:   "password4321",
 }
 
-var cfg = config.NewConfig("../config/config.json")
-var dbUsed = cfg.Sqlite3
-var addr = cfg.Host + ":" + cfg.Port + cfg.Prefix
+var cfg *config.Config
+var dbUsed config.DbConfig
+var addr string
+
+func init() {
+	err := godotenv.Load("../.env")
+	if err != nil {
+		log.Fatal("Failed to load .env file")
+	}
+
+	cfg = config.NewConfig("../config/config.json")
+	dbUsed = cfg.Sqlite3
+	addr = cfg.Host + ":" + cfg.Port + cfg.Prefix
+}
 
 func openDb(t *testing.T) *sql.DB {
-	db, err := sql.Open(dbUsed.DriverName, dbUsed.ConnStr)
+	db, err := sql.Open(dbUsed.DriverName, os.Getenv(dbUsed.ConnStrEnv))
 	if err != nil {
 		t.Fatal(err)
 	}
