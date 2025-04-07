@@ -4,7 +4,7 @@ import (
 	"slices"
 	"testing"
 
-	"github.com/artemwebber1/friendly_reminder/internal/repository"
+	repo "github.com/artemwebber1/friendly_reminder/internal/repository/sqlite"
 	_ "github.com/mattn/go-sqlite3" // sqlite3 driver
 )
 
@@ -12,7 +12,7 @@ func TestAddUser(t *testing.T) {
 	db := openDb(t)
 	defer cleanDb(db, t)
 
-	repo := repository.NewUsersRepository(db)
+	repo := repo.NewUsersRepository(db)
 
 	_, err := repo.AddUser(t.Context(), mock.email, mock.pwd)
 
@@ -25,7 +25,7 @@ func TestMakeSigned(t *testing.T) {
 	db := openDb(t)
 	defer cleanDb(db, t)
 
-	repo := repository.NewUsersRepository(db)
+	repo := repo.NewUsersRepository(db)
 
 	_, err := repo.AddUser(t.Context(), mock.email, mock.pwd)
 	if err != nil {

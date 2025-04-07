@@ -3,14 +3,14 @@ package test
 import (
 	"testing"
 
-	"github.com/artemwebber1/friendly_reminder/internal/repository"
+	repo "github.com/artemwebber1/friendly_reminder/internal/repository/sqlite"
 )
 
 func TestCreateToken(t *testing.T) {
 	db := openDb(t)
 	defer cleanDb(db, t)
 
-	tokRepo := repository.NewUnverifiedUsersRepository(db)
+	tokRepo := repo.NewUnverifiedUsersRepository(db)
 	tok, err := tokRepo.CreateToken(mock.email, mock.pwd)
 	if err != nil {
 		t.Fatal(err)
@@ -25,7 +25,7 @@ func TestGetUserByToken(t *testing.T) {
 	db := openDb(t)
 	defer cleanDb(db, t)
 
-	tokRepo := repository.NewUnverifiedUsersRepository(db)
+	tokRepo := repo.NewUnverifiedUsersRepository(db)
 
 	tok, err := tokRepo.CreateToken(mock.email, mock.pwd)
 	if err != nil {

@@ -12,7 +12,7 @@ import (
 	"github.com/artemwebber1/friendly_reminder/internal/config"
 	"github.com/artemwebber1/friendly_reminder/internal/controller"
 	"github.com/artemwebber1/friendly_reminder/internal/reminder"
-	"github.com/artemwebber1/friendly_reminder/internal/repository"
+	repo "github.com/artemwebber1/friendly_reminder/internal/repository/sqlite"
 	"github.com/artemwebber1/friendly_reminder/pkg/email"
 	_ "github.com/mattn/go-sqlite3" // sqlite3 driver
 )
@@ -39,9 +39,9 @@ func (a *App) Run(ctx context.Context) {
 	defer db.Close()
 
 	// Инициализация репозиториев
-	usersRepo := repository.NewUsersRepository(db)
-	tasksRepo := repository.NewTasksRepository(db)
-	unverifiedUsersRepo := repository.NewUnverifiedUsersRepository(db)
+	usersRepo := repo.NewUsersRepository(db)
+	tasksRepo := repo.NewTasksRepository(db)
+	unverifiedUsersRepo := repo.NewUnverifiedUsersRepository(db)
 
 	// Объект для рассылки писем
 	emailSender := email.NewSender(

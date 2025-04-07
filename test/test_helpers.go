@@ -12,7 +12,7 @@ import (
 
 	"github.com/artemwebber1/friendly_reminder/internal/config"
 	"github.com/artemwebber1/friendly_reminder/internal/controller"
-	"github.com/artemwebber1/friendly_reminder/internal/repository"
+	repo "github.com/artemwebber1/friendly_reminder/internal/repository/sqlite"
 	"github.com/artemwebber1/friendly_reminder/pkg/email"
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"           // postgres driver
@@ -80,15 +80,15 @@ func getJwt(t *testing.T, usersCtrl *controller.UsersController) string {
 }
 
 func getUsersController(db *sql.DB) *controller.UsersController {
-	ur := repository.NewUsersRepository(db)
-	uur := repository.NewUnverifiedUsersRepository(db)
+	ur := repo.NewUsersRepository(db)
+	uur := repo.NewUnverifiedUsersRepository(db)
 	sender := getEmailSender(cfg.EmailOptions.Host, cfg.EmailOptions.Port)
 	return controller.NewUsersController(ur, uur, sender, cfg)
 }
 
 func getTasksController(db *sql.DB) *controller.TasksController {
-	tr := repository.NewTasksRepository(db)
-	ur := repository.NewUsersRepository(db)
+	tr := repo.NewTasksRepository(db)
+	ur := repo.NewUsersRepository(db)
 	return controller.NewTasksController(tr, ur, cfg)
 }
 
