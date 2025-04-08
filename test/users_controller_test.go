@@ -8,7 +8,7 @@ import (
 	"testing"
 
 	"github.com/artemwebber1/friendly_reminder/internal/hasher"
-	repo "github.com/artemwebber1/friendly_reminder/internal/repository/sqlite"
+	repo "github.com/artemwebber1/friendly_reminder/internal/repository/postgres"
 )
 
 func TestSendConfirmEmailLink(t *testing.T) {

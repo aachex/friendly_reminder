@@ -20,17 +20,15 @@ func NewTasksRepository(db *sql.DB) *TasksRepository {
 	}
 }
 
-// AddItem добавляет новую задачу в список пользователя. Возвращает id созданноё задачи.
+// AddItem добавляет новую задачу в список пользователя. Возвращает id созданной задачи.
 func (r *TasksRepository) AddTask(ctx context.Context, value, userEmail string) (int64, error) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	res, err := r.db.ExecContext(ctx, "INSERT INTO tasks(value, user_email) VALUES($1, $2)", value, userEmail)
-	if err != nil {
-		return -1, err
-	}
+	row := r.db.QueryRowContext(ctx, "INSERT INTO tasks(value, user_email) VALUES($1, $2) RETURNING task_id", value, userEmail)
 
-	id, err := res.LastInsertId()
+	var id int64
+	err := row.Scan(&id)
 	if err != nil {
 		return -1, err
 	}

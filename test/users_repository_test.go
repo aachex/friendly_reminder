@@ -4,8 +4,7 @@ import (
 	"slices"
 	"testing"
 
-	repo "github.com/artemwebber1/friendly_reminder/internal/repository/sqlite"
-	_ "github.com/mattn/go-sqlite3" // sqlite3 driver
+	repo "github.com/artemwebber1/friendly_reminder/internal/repository/postgres"
 )
 
 func TestAddUser(t *testing.T) {

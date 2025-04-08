@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/artemwebber1/friendly_reminder/internal/hasher"
-	repo "github.com/artemwebber1/friendly_reminder/internal/repository/sqlite"
+	repo "github.com/artemwebber1/friendly_reminder/internal/repository/postgres"
 )
 
 func TestCreateTask_Unauthorized(t *testing.T) {
@@ -47,7 +47,10 @@ func TestCreateTask(t *testing.T) {
 	}
 
 	usersRepo := repo.NewUsersRepository(db)
-	usersRepo.AddUser(t.Context(), mock.email, hasher.Hash(mock.pwd))
+	err = usersRepo.AddUser(t.Context(), mock.email, hasher.Hash(mock.pwd))
+	if err != nil {
+		t.Fatal(err.Error())
+	}
 
 	req.Header.Add("Authorization", "Bearer "+getJwt(t, getUsersController(db)))
 	tasksCtrl.CreateTask(resRec, req)

@@ -12,11 +12,10 @@ import (
 
 	"github.com/artemwebber1/friendly_reminder/internal/config"
 	"github.com/artemwebber1/friendly_reminder/internal/controller"
-	repo "github.com/artemwebber1/friendly_reminder/internal/repository/sqlite"
+	repo "github.com/artemwebber1/friendly_reminder/internal/repository/postgres"
 	"github.com/artemwebber1/friendly_reminder/pkg/email"
 	"github.com/joho/godotenv"
-	_ "github.com/lib/pq"           // postgres driver
-	_ "github.com/mattn/go-sqlite3" // sqlite3 driver
+	_ "github.com/lib/pq" // postgres driver
 )
 
 // mock struct
@@ -40,7 +39,7 @@ func init() {
 	}
 
 	cfg = config.NewConfig("../config/config.json")
-	dbUsed = cfg.Database.Sqlite3
+	dbUsed = cfg.Database.Postgres
 	addr = cfg.Host + ":" + cfg.Port + cfg.Prefix
 }
 

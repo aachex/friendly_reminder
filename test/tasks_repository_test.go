@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	repo "github.com/artemwebber1/friendly_reminder/internal/repository/sqlite"
+	repo "github.com/artemwebber1/friendly_reminder/internal/repository/postgres"
 )
 
 func TestGetList(t *testing.T) {
@@ -50,14 +50,9 @@ func TestAddTask_InvalidEmail(t *testing.T) {
 	db := openDb(t)
 	defer cleanDb(db, t)
 
-	_, err := db.Exec("PRAGMA FOREIGN_KEYS=ON")
-	if err != nil {
-		t.Fatal(err)
-	}
-
 	tasksRepo := repo.NewTasksRepository(db)
 
-	_, err = tasksRepo.AddTask(t.Context(), "error", "invalid@mail.com")
+	_, err := tasksRepo.AddTask(t.Context(), "error", "invalid@mail.com")
 	if err == nil {
 		t.Fatal(err)
 	}
