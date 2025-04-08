@@ -4,10 +4,15 @@
     "apiPrefix": "/api/v1",
     "readTimeout": 200,
     "writeTimeout": 200,
-    "dbOptions": {
-        "driver": "sqlite3",
-        "path": "D:\\projects\\golang\\Web\\friendly_reminder\\api\\db\\database.db",
-        "containerDbPath": "/app/database.db"
+    "database": {
+        "sqlite3": {
+            "driver": "sqlite3",
+            "connStrEnv": "SQLITE3_CONN_STR"
+        },
+        "postgres": {
+            "driver": "postgres",
+            "connStrEnv": "POSTGRES_CONN_STR"
+        }
     },
     "emailOptions": {
         "emailHost": "smtp.gmail.com",

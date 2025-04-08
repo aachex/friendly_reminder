@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"database/sql"
 	"fmt"
+	"log"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -11,8 +12,10 @@ import (
 
 	"github.com/artemwebber1/friendly_reminder/internal/config"
 	"github.com/artemwebber1/friendly_reminder/internal/controller"
-	"github.com/artemwebber1/friendly_reminder/internal/repository"
+	repo "github.com/artemwebber1/friendly_reminder/internal/repository/postgres"
 	"github.com/artemwebber1/friendly_reminder/pkg/email"
+	"github.com/joho/godotenv"
+	_ "github.com/lib/pq" // postgres driver
 )
 
 // mock struct
@@ -25,12 +28,23 @@ var mock = m{
 	pwd:   "password4321",
 }
 
-var cfg = config.NewConfig("../config/config.json")
+var cfg *config.Config
+var dbUsed config.DbConfig
+var addr string
 
-var addr = cfg.Host + ":" + cfg.Port + cfg.Prefix
+func init() {
+	err := godotenv.Load("../.env")
+	if err != nil {
+		log.Fatal("Failed to load .env file")
+	}
+
+	cfg = config.NewConfig("../config/config.json")
+	dbUsed = cfg.Database.Postgres
+	addr = cfg.Host + ":" + cfg.Port + cfg.Prefix
+}
 
 func openDb(t *testing.T) *sql.DB {
-	db, err := sql.Open(cfg.DbOptions.DriverName, cfg.DbOptions.DbPath)
+	db, err := sql.Open(dbUsed.DriverName, os.Getenv(dbUsed.ConnStrEnv))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -65,15 +79,15 @@ func getJwt(t *testing.T, usersCtrl *controller.UsersController) string {
 }
 
 func getUsersController(db *sql.DB) *controller.UsersController {
-	ur := repository.NewUsersRepository(db)
-	uur := repository.NewUnverifiedUsersRepository(db)
+	ur := repo.NewUsersRepository(db)
+	uur := repo.NewUnverifiedUsersRepository(db)
 	sender := getEmailSender(cfg.EmailOptions.Host, cfg.EmailOptions.Port)
 	return controller.NewUsersController(ur, uur, sender, cfg)
 }
 
 func getTasksController(db *sql.DB) *controller.TasksController {
-	tr := repository.NewTasksRepository(db)
-	ur := repository.NewUsersRepository(db)
+	tr := repo.NewTasksRepository(db)
+	ur := repo.NewUsersRepository(db)
 	return controller.NewTasksController(tr, ur, cfg)
 }
 

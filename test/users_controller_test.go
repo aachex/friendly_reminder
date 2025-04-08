@@ -8,7 +8,7 @@ import (
 	"testing"
 
 	"github.com/artemwebber1/friendly_reminder/internal/hasher"
-	"github.com/artemwebber1/friendly_reminder/internal/repository"
+	repo "github.com/artemwebber1/friendly_reminder/internal/repository/postgres"
 )
 
 func TestSendConfirmEmailLink(t *testing.T) {
@@ -32,7 +32,7 @@ func TestSendConfirmEmailLink(t *testing.T) {
 
 	tok := resRec.Body.String()
 
-	uur := repository.NewUnverifiedUsersRepository(db)
+	uur := repo.NewUnverifiedUsersRepository(db)
 	if !uur.HasToken(mock.email) || !uur.TokenExists(tok) {
 		t.Fatalf("Invalid token: %s", tok)
 	}
@@ -54,7 +54,7 @@ func TestConfirmEmail(t *testing.T) {
 
 	tok := resRec.Body.String()
 
-	uur := repository.NewUnverifiedUsersRepository(db)
+	uur := repo.NewUnverifiedUsersRepository(db)
 	if !uur.HasToken(mock.email) || !uur.TokenExists(tok) {
 		t.Fatalf("Invalid token: %s", tok)
 	}
@@ -95,7 +95,7 @@ func TestSubscribeUser(t *testing.T) {
 	usersCtrl := getUsersController(db)
 
 	// Сначала регистрируем пользователя для получения токена авторизации
-	usersRepo := repository.NewUsersRepository(db)
+	usersRepo := repo.NewUsersRepository(db)
 	usersRepo.AddUser(t.Context(), mock.email, hasher.Hash(mock.pwd))
 
 	tok := getJwt(t, usersCtrl)
@@ -117,8 +117,8 @@ func TestLogin(t *testing.T) {
 	db := openDb(t)
 	defer cleanDb(db, t)
 
-	usersRepo := repository.NewUsersRepository(db)
-	_, err := usersRepo.AddUser(t.Context(), mock.email, hasher.Hash(mock.pwd))
+	usersRepo := repo.NewUsersRepository(db)
+	err := usersRepo.AddUser(t.Context(), mock.email, hasher.Hash(mock.pwd))
 	if err != nil {
 		t.Fatalf("Failed to create user: %s", err)
 	}

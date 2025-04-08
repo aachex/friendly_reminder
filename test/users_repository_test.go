@@ -4,17 +4,16 @@ import (
 	"slices"
 	"testing"
 
-	"github.com/artemwebber1/friendly_reminder/internal/repository"
-	_ "github.com/mattn/go-sqlite3" // sqlite3 driver
+	repo "github.com/artemwebber1/friendly_reminder/internal/repository/postgres"
 )
 
 func TestAddUser(t *testing.T) {
 	db := openDb(t)
 	defer cleanDb(db, t)
 
-	repo := repository.NewUsersRepository(db)
+	repo := repo.NewUsersRepository(db)
 
-	_, err := repo.AddUser(t.Context(), mock.email, mock.pwd)
+	err := repo.AddUser(t.Context(), mock.email, mock.pwd)
 
 	if err != nil || !repo.EmailExists(t.Context(), mock.email) {
 		t.Fatal(err)
@@ -25,9 +24,9 @@ func TestMakeSigned(t *testing.T) {
 	db := openDb(t)
 	defer cleanDb(db, t)
 
-	repo := repository.NewUsersRepository(db)
+	repo := repo.NewUsersRepository(db)
 
-	_, err := repo.AddUser(t.Context(), mock.email, mock.pwd)
+	err := repo.AddUser(t.Context(), mock.email, mock.pwd)
 	if err != nil {
 		t.Fatal(err)
 	}

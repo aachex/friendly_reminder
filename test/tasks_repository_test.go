@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/artemwebber1/friendly_reminder/internal/repository"
+	repo "github.com/artemwebber1/friendly_reminder/internal/repository/postgres"
 )
 
 func TestGetList(t *testing.T) {
@@ -12,17 +12,17 @@ func TestGetList(t *testing.T) {
 	defer cleanDb(db, t)
 
 	// Создаём пользователя
-	repo := repository.NewUsersRepository(db)
+	usersRepo := repo.NewUsersRepository(db)
 	const email = "abcde@gmail.com"
 	const passwordHash = "hashedPassword"
-	_, err := repo.AddUser(t.Context(), email, passwordHash)
+	err := usersRepo.AddUser(t.Context(), email, passwordHash)
 
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	// Пользователь добавляет новые дела в свой список
-	itemsRepo := repository.NewTasksRepository(db)
+	itemsRepo := repo.NewTasksRepository(db)
 	tasks := []string{"do homework", "smth", "##@@??"}
 
 	for _, task := range tasks {
@@ -50,14 +50,9 @@ func TestAddTask_InvalidEmail(t *testing.T) {
 	db := openDb(t)
 	defer cleanDb(db, t)
 
-	_, err := db.Exec("PRAGMA FOREIGN_KEYS=ON")
-	if err != nil {
-		t.Fatal(err)
-	}
+	tasksRepo := repo.NewTasksRepository(db)
 
-	tasksRepo := repository.NewTasksRepository(db)
-
-	_, err = tasksRepo.AddTask(t.Context(), "error", "invalid@mail.com")
+	_, err := tasksRepo.AddTask(t.Context(), "error", "invalid@mail.com")
 	if err == nil {
 		t.Fatal(err)
 	}
@@ -67,7 +62,7 @@ func TestAddTask_Timeout(t *testing.T) {
 	db := openDb(t)
 	defer cleanDb(db, t)
 
-	tasksRepo := repository.NewTasksRepository(db)
+	tasksRepo := repo.NewTasksRepository(db)
 
 	ctx, cancel := context.WithTimeout(t.Context(), 0)
 	defer cancel()

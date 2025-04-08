@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/artemwebber1/friendly_reminder/internal/hasher"
-	"github.com/artemwebber1/friendly_reminder/internal/repository"
+	repo "github.com/artemwebber1/friendly_reminder/internal/repository/postgres"
 )
 
 func TestCreateTask_Unauthorized(t *testing.T) {
@@ -46,8 +46,11 @@ func TestCreateTask(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	usersRepo := repository.NewUsersRepository(db)
-	usersRepo.AddUser(t.Context(), mock.email, hasher.Hash(mock.pwd))
+	usersRepo := repo.NewUsersRepository(db)
+	err = usersRepo.AddUser(t.Context(), mock.email, hasher.Hash(mock.pwd))
+	if err != nil {
+		t.Fatal(err.Error())
+	}
 
 	req.Header.Add("Authorization", "Bearer "+getJwt(t, getUsersController(db)))
 	tasksCtrl.CreateTask(resRec, req)
@@ -61,10 +64,10 @@ func TestDeleteTask(t *testing.T) {
 	db := openDb(t)
 	defer cleanDb(db, t)
 
-	usersRepo := repository.NewUsersRepository(db)
+	usersRepo := repo.NewUsersRepository(db)
 	usersRepo.AddUser(t.Context(), mock.email, hasher.Hash(mock.pwd))
 
-	tasksRepo := repository.NewTasksRepository(db)
+	tasksRepo := repo.NewTasksRepository(db)
 
 	ctx, cancel := context.WithTimeout(t.Context(), time.Millisecond*20)
 	defer cancel()

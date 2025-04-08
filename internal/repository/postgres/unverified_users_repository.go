@@ -1,9 +1,10 @@
-package repository
+package sqlite
 
 import (
 	"crypto/rand"
 	"database/sql"
 	"encoding/base32"
+	"fmt"
 	"sync"
 
 	"github.com/artemwebber1/friendly_reminder/internal/models"
@@ -37,10 +38,11 @@ func (r *UnverifiedUsersRepository) CreateToken(email, pwd string) (string, erro
 
 	_, err := r.db.Exec("INSERT INTO unverified_users(user_email, user_password, token) VALUES($1, $2, $3)", email, pwd, token)
 	if err != nil {
+		fmt.Println(token)
 		return "", err
 	}
 
-	return token, err
+	return token, nil
 }
 
 // DeleteToken удаляет токен из базы данных.

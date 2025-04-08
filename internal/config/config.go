@@ -6,6 +6,11 @@ import (
 	"time"
 )
 
+type DbConfig struct {
+	DriverName string `json:"driver"`
+	ConnStrEnv string `json:"connStrEnv"`
+}
+
 type Config struct {
 	Host         string        `json:"host"`
 	Port         string        `json:"port"`
@@ -13,11 +18,10 @@ type Config struct {
 	ReadTimeout  time.Duration `jsom:"readTimeout"`
 	WriteTimeout time.Duration `jsom:"writeTimeout"`
 
-	DbOptions struct {
-		DriverName      string `json:"driver"`
-		DbPath          string `json:"path"`
-		ContainerDbPath string `json:"containerDbPath"`
-	}
+	Database struct {
+		Sqlite3  DbConfig `json:"sqlite3"`
+		Postgres DbConfig `json:"postgres"`
+	} `json:"database"`
 
 	EmailOptions struct {
 		Host string `json:"emailHost"`

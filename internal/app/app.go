@@ -12,9 +12,9 @@ import (
 	"github.com/artemwebber1/friendly_reminder/internal/config"
 	"github.com/artemwebber1/friendly_reminder/internal/controller"
 	"github.com/artemwebber1/friendly_reminder/internal/reminder"
-	"github.com/artemwebber1/friendly_reminder/internal/repository"
+	repo "github.com/artemwebber1/friendly_reminder/internal/repository/postgres"
 	"github.com/artemwebber1/friendly_reminder/pkg/email"
-	_ "github.com/mattn/go-sqlite3" // sqlite3 driver
+	_ "github.com/lib/pq" // postgres driver
 )
 
 type App struct {
@@ -30,17 +30,17 @@ func New(cfg *config.Config) *App {
 
 func (a *App) Run(ctx context.Context) {
 	// Подключение к бд
-	db, err := sql.Open(a.cfg.DbOptions.DriverName, a.cfg.DbOptions.ContainerDbPath)
+	dbUsed := a.cfg.Database.Postgres
+	db, err := sql.Open(dbUsed.DriverName, os.Getenv(dbUsed.ConnStrEnv))
 	if err != nil {
 		log.Fatal(err)
 	}
-	db.Exec("PRAGMA FOREIGN_KEYS=ON")
 	defer db.Close()
 
 	// Инициализация репозиториев
-	usersRepo := repository.NewUsersRepository(db)
-	tasksRepo := repository.NewTasksRepository(db)
-	unverifiedUsersRepo := repository.NewUnverifiedUsersRepository(db)
+	usersRepo := repo.NewUsersRepository(db)
+	tasksRepo := repo.NewTasksRepository(db)
+	unverifiedUsersRepo := repo.NewUnverifiedUsersRepository(db)
 
 	// Объект для рассылки писем
 	emailSender := email.NewSender(
