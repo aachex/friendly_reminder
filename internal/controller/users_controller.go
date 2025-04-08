@@ -19,9 +19,7 @@ import (
 
 type usersRepository interface {
 	// AddUser добавляет нового пользователя.
-	//
-	// Возвращает id нового пользователя и ошибку.
-	AddUser(ctx context.Context, email, password string) (int64, error)
+	AddUser(ctx context.Context, email, password string) error
 
 	// DeleteUser удаляет пользователя из базы данных.
 	DeleteUser(ctx context.Context, email string) error

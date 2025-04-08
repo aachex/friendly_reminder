@@ -118,7 +118,7 @@ func TestLogin(t *testing.T) {
 	defer cleanDb(db, t)
 
 	usersRepo := repo.NewUsersRepository(db)
-	_, err := usersRepo.AddUser(t.Context(), mock.email, hasher.Hash(mock.pwd))
+	err := usersRepo.AddUser(t.Context(), mock.email, hasher.Hash(mock.pwd))
 	if err != nil {
 		t.Fatalf("Failed to create user: %s", err)
 	}

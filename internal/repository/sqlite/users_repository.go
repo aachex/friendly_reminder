@@ -19,21 +19,15 @@ func NewUsersRepository(db *sql.DB) *UsersRepository {
 }
 
 // AddUser добавляет нового пользователя.
-//
-// Возвращает id нового пользователя и ошибку.
-func (r *UsersRepository) AddUser(ctx context.Context, email, password string) (id int64, err error) {
+func (r *UsersRepository) AddUser(ctx context.Context, email, password string) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	res, err := r.db.ExecContext(ctx, "INSERT INTO users(email, password) VALUES($1, $2)", email, password)
+	_, err := r.db.ExecContext(ctx, "INSERT INTO users(email, password) VALUES($1, $2)", email, password)
 	if err != nil {
-		return -1, err
+		return err
 	}
-	id, err = res.LastInsertId()
-	if err != nil {
-		return -1, err
-	}
-	return id, err
+	return err
 }
 
 // DeleteUser удаляет пользователя из базы данных.
