@@ -13,7 +13,7 @@ import (
 	mw "github.com/artemwebber1/friendly_reminder/internal/middleware"
 	"github.com/artemwebber1/friendly_reminder/internal/models"
 	"github.com/artemwebber1/friendly_reminder/pkg/email"
-	"github.com/artemwebber1/friendly_reminder/pkg/jwtservice"
+	"github.com/artemwebber1/friendly_reminder/pkg/jwtutil"
 	"github.com/golang-jwt/jwt/v5"
 )
 
@@ -180,9 +180,9 @@ func (c *UsersController) ConfirmEmail(w http.ResponseWriter, r *http.Request) {
 //
 // Обрабатывает PATCH запросы по пути '/users/subscribe'.
 func (c *UsersController) SubscribeUser(w http.ResponseWriter, r *http.Request) {
-	rawJwt := jwtservice.FromHeader(r.Header)
+	rawJwt := jwtutil.FromHeader(r.Header)
 
-	jwtClaims, err := jwtservice.GetClaims(rawJwt, jwtKey())
+	jwtClaims, err := jwtutil.GetClaims(rawJwt, jwtKey())
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusForbidden)
 		return

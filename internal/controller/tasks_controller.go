@@ -8,7 +8,7 @@ import (
 	"github.com/artemwebber1/friendly_reminder/internal/config"
 	mw "github.com/artemwebber1/friendly_reminder/internal/middleware"
 	"github.com/artemwebber1/friendly_reminder/internal/models"
-	"github.com/artemwebber1/friendly_reminder/pkg/jwtservice"
+	"github.com/artemwebber1/friendly_reminder/pkg/jwtutil"
 )
 
 type tasksRepository interface {
@@ -65,8 +65,8 @@ func (c *TasksController) AddEndpoints(mux *http.ServeMux) {
 //
 // Обрабатывает POST запросы по пути '/tasks/new'.
 func (c *TasksController) CreateTask(w http.ResponseWriter, r *http.Request) {
-	rawJwt := jwtservice.FromHeader(r.Header)
-	jwtClaims, err := jwtservice.GetClaims(rawJwt, jwtKey())
+	rawJwt := jwtutil.FromHeader(r.Header)
+	jwtClaims, err := jwtutil.GetClaims(rawJwt, jwtKey())
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusForbidden)
 		return
@@ -110,8 +110,8 @@ func (c *TasksController) CreateTask(w http.ResponseWriter, r *http.Request) {
 //
 // Обрабатывает GET запросы по пути '/tasks/list'.
 func (c *TasksController) GetList(w http.ResponseWriter, r *http.Request) {
-	rawJwt := jwtservice.FromHeader(r.Header)
-	jwtClaims, err := jwtservice.GetClaims(rawJwt, jwtKey())
+	rawJwt := jwtutil.FromHeader(r.Header)
+	jwtClaims, err := jwtutil.GetClaims(rawJwt, jwtKey())
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusForbidden)
 		return
@@ -141,8 +141,8 @@ func (c *TasksController) GetList(w http.ResponseWriter, r *http.Request) {
 //
 // Обрабатывает DELETE запросы по пути '/tasks/clear-list'.
 func (c *TasksController) ClearList(w http.ResponseWriter, r *http.Request) {
-	rawJwt := jwtservice.FromHeader(r.Header)
-	jwtClaims, err := jwtservice.GetClaims(rawJwt, jwtKey())
+	rawJwt := jwtutil.FromHeader(r.Header)
+	jwtClaims, err := jwtutil.GetClaims(rawJwt, jwtKey())
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusForbidden)
 		return
@@ -170,8 +170,8 @@ func (c *TasksController) ClearList(w http.ResponseWriter, r *http.Request) {
 //
 // Обрабатывает DELETE запросы по пути '/tasks/del'.
 func (c *TasksController) DeleteTask(w http.ResponseWriter, r *http.Request) {
-	rawJwt := jwtservice.FromHeader(r.Header)
-	jwtClaims, err := jwtservice.GetClaims(rawJwt, jwtKey())
+	rawJwt := jwtutil.FromHeader(r.Header)
+	jwtClaims, err := jwtutil.GetClaims(rawJwt, jwtKey())
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusForbidden)
 		return

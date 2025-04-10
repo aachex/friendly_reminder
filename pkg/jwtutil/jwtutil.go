@@ -1,4 +1,4 @@
-package jwtservice
+package jwtutil
 
 import (
 	"errors"
