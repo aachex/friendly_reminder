@@ -143,8 +143,6 @@ func (c *UsersController) SendConfirmEmailLink(w http.ResponseWriter, r *http.Re
 		subject,
 		body,
 		user.Email)
-
-	w.Write([]byte(confirmToken))
 }
 
 // ConfirmEmail является эндпоинтом, на который пользователь попадёт, подтверждая электронную почту.
