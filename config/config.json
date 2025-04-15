@@ -2,8 +2,8 @@
     "host": "http://localhost",
     "port": "8080",
     "apiPrefix": "/api/v1",
-    "readTimeout": 200,
-    "writeTimeout": 200,
+    "readTimeout": 2000,
+    "writeTimeout": 2000,
     "database": {
         "sqlite3": {
             "driver": "sqlite3",
