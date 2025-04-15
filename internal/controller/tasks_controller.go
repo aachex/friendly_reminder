@@ -8,6 +8,7 @@ import (
 	"github.com/artemwebber1/friendly_reminder/internal/config"
 	"github.com/artemwebber1/friendly_reminder/internal/models"
 	"github.com/artemwebber1/friendly_reminder/pkg/authorization"
+	"github.com/artemwebber1/friendly_reminder/pkg/cors"
 	"github.com/artemwebber1/friendly_reminder/pkg/logging"
 )
 
@@ -42,22 +43,22 @@ func NewTasksController(tr tasksRepository, ur usersRepository, cfg *config.Conf
 func (c *TasksController) AddEndpoints(mux *http.ServeMux) {
 	mux.HandleFunc(
 		"POST "+c.cfg.Prefix+"/tasks/new",
-		logging.Middleware(authorization.Middleware(c.CreateTask)),
+		logging.Middleware(cors.Middleware(authorization.Middleware(c.CreateTask))),
 	)
 
 	mux.HandleFunc(
 		"GET "+c.cfg.Prefix+"/tasks/list",
-		logging.Middleware(authorization.Middleware(c.GetList)),
+		logging.Middleware(cors.Middleware(authorization.Middleware(c.GetList))),
 	)
 
 	mux.HandleFunc(
 		"DELETE "+c.cfg.Prefix+"/tasks/clear-list",
-		logging.Middleware(authorization.Middleware(c.ClearList)),
+		logging.Middleware(cors.Middleware(authorization.Middleware(c.ClearList))),
 	)
 
 	mux.HandleFunc(
 		"DELETE "+c.cfg.Prefix+"/tasks/del",
-		logging.Middleware(authorization.Middleware(c.DeleteTask)),
+		logging.Middleware(cors.Middleware(authorization.Middleware(c.DeleteTask))),
 	)
 }
 

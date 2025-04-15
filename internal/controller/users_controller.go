@@ -12,6 +12,7 @@ import (
 	"github.com/artemwebber1/friendly_reminder/internal/hasher"
 	"github.com/artemwebber1/friendly_reminder/internal/models"
 	"github.com/artemwebber1/friendly_reminder/pkg/authorization"
+	"github.com/artemwebber1/friendly_reminder/pkg/cors"
 	"github.com/artemwebber1/friendly_reminder/pkg/email"
 	"github.com/artemwebber1/friendly_reminder/pkg/logging"
 	"github.com/golang-jwt/jwt/v5"
@@ -84,22 +85,22 @@ func NewUsersController(
 func (c *UsersController) AddEndpoints(mux *http.ServeMux) {
 	mux.HandleFunc(
 		"POST "+c.cfg.Prefix+"/users/new",
-		logging.Middleware(c.SendConfirmEmailLink),
+		logging.Middleware(cors.Middleware(c.SendConfirmEmailLink)),
 	)
 
 	mux.HandleFunc(
 		"POST "+c.cfg.Prefix+"/users/login",
-		logging.Middleware(c.Login),
+		logging.Middleware(cors.Middleware(c.Login)),
 	)
 
 	mux.HandleFunc(
 		"GET "+c.cfg.Prefix+"/users/confirm-email",
-		logging.Middleware(c.ConfirmEmail),
+		logging.Middleware(cors.Middleware(c.ConfirmEmail)),
 	)
 
 	mux.HandleFunc(
 		"PATCH "+c.cfg.Prefix+"/users/subscribe",
-		logging.Middleware(authorization.Middleware(c.SubscribeUser)),
+		logging.Middleware(cors.Middleware(authorization.Middleware(c.SubscribeUser))),
 	)
 }
 
