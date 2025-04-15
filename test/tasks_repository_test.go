@@ -8,7 +8,6 @@ import (
 )
 
 func TestGetList(t *testing.T) {
-	db := openDb(t)
 	defer cleanDb(db, t)
 
 	// Создаём пользователя
@@ -47,7 +46,6 @@ func TestGetList(t *testing.T) {
 
 // Здесь тестируем обновление списка для несуществующего пользователя - должна возникнуть ошибка FOREIGN KEY constraint failed.
 func TestAddTask_InvalidEmail(t *testing.T) {
-	db := openDb(t)
 	defer cleanDb(db, t)
 
 	tasksRepo := repo.NewTasksRepository(db)
@@ -59,7 +57,6 @@ func TestAddTask_InvalidEmail(t *testing.T) {
 }
 
 func TestAddTask_Timeout(t *testing.T) {
-	db := openDb(t)
 	defer cleanDb(db, t)
 
 	tasksRepo := repo.NewTasksRepository(db)

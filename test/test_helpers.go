@@ -31,6 +31,7 @@ var mock = m{
 var cfg *config.Config
 var dbUsed config.DbConfig
 var addr string
+var db *sql.DB
 
 func init() {
 	err := godotenv.Load("../.env")
@@ -41,14 +42,10 @@ func init() {
 	cfg = config.NewConfig("../config/config.json")
 	dbUsed = cfg.Database.Postgres
 	addr = cfg.Host + ":" + cfg.Port + cfg.Prefix
-}
-
-func openDb(t *testing.T) *sql.DB {
-	db, err := sql.Open(dbUsed.DriverName, os.Getenv(dbUsed.ConnStrEnv))
+	db, err = sql.Open(dbUsed.DriverName, os.Getenv(dbUsed.ConnStrEnv))
 	if err != nil {
-		t.Fatal(err)
+		panic(err)
 	}
-	return db
 }
 
 func cleanDb(db *sql.DB, t *testing.T) {
@@ -56,11 +53,6 @@ func cleanDb(db *sql.DB, t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	db.Close()
-}
-
-func statusCodesMismatch(wanted, got int, body string) string {
-	return fmt.Sprintf("Wanted status code %d, got %d.\nResponse body: %s", wanted, got, body)
 }
 
 func getJwt(t *testing.T, usersCtrl *controller.UsersController) string {
@@ -72,10 +64,14 @@ func getJwt(t *testing.T, usersCtrl *controller.UsersController) string {
 	}
 	usersCtrl.Login(resRec, req)
 	if resRec.Result().StatusCode != http.StatusOK {
-		t.Fatalf("Wanted status code %d, got %d.\nResponse body: %s", http.StatusOK, resRec.Result().StatusCode, resRec.Body)
+		t.Fatal(statusCodesMismatch(http.StatusOK, resRec.Result().StatusCode, resRec.Body.String()))
 	}
 
 	return resRec.Body.String()
+}
+
+func statusCodesMismatch(wanted, got int, body string) string {
+	return fmt.Sprintf("Wanted status code %d, got %d.\nResponse body: %s", wanted, got, body)
 }
 
 func getUsersController(db *sql.DB) *controller.UsersController {

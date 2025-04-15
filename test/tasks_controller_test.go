@@ -2,19 +2,16 @@ package test
 
 import (
 	"bytes"
-	"context"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
-	"time"
 
 	"github.com/artemwebber1/friendly_reminder/internal/hasher"
 	repo "github.com/artemwebber1/friendly_reminder/internal/repository/postgres"
 )
 
 func TestCreateTask_Unauthorized(t *testing.T) {
-	db := openDb(t)
 	defer cleanDb(db, t)
 
 	tasksCtrl := getTasksController(db)
@@ -34,7 +31,6 @@ func TestCreateTask_Unauthorized(t *testing.T) {
 }
 
 func TestCreateTask(t *testing.T) {
-	db := openDb(t)
 	defer cleanDb(db, t)
 
 	tasksCtrl := getTasksController(db)
@@ -61,7 +57,6 @@ func TestCreateTask(t *testing.T) {
 }
 
 func TestDeleteTask(t *testing.T) {
-	db := openDb(t)
 	defer cleanDb(db, t)
 
 	usersRepo := repo.NewUsersRepository(db)
@@ -69,10 +64,7 @@ func TestDeleteTask(t *testing.T) {
 
 	tasksRepo := repo.NewTasksRepository(db)
 
-	ctx, cancel := context.WithTimeout(t.Context(), time.Millisecond*20)
-	defer cancel()
-
-	id, err := tasksRepo.AddTask(ctx, "Do homework", mock.email)
+	id, err := tasksRepo.AddTask(t.Context(), "Do homework", mock.email)
 	if err != nil {
 		t.Fatal(err)
 	}

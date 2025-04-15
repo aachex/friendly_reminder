@@ -12,7 +12,6 @@ import (
 )
 
 func TestSendConfirmEmailLink(t *testing.T) {
-	db := openDb(t)
 	defer cleanDb(db, t)
 
 	usersCtrl := getUsersController(db)
@@ -39,7 +38,6 @@ func TestSendConfirmEmailLink(t *testing.T) {
 }
 
 func TestConfirmEmail(t *testing.T) {
-	db := openDb(t)
 	defer cleanDb(db, t)
 
 	body := bytes.NewReader(fmt.Appendf(nil, "{\"email\": \"%s\", \"password\": \"%s\"}", mock.email, mock.pwd))
@@ -72,7 +70,6 @@ func TestConfirmEmail(t *testing.T) {
 }
 
 func TestSubscribeUser_Unauthorized(t *testing.T) {
-	db := openDb(t)
 	defer cleanDb(db, t)
 
 	resRec := httptest.NewRecorder()
@@ -89,7 +86,6 @@ func TestSubscribeUser_Unauthorized(t *testing.T) {
 }
 
 func TestSubscribeUser(t *testing.T) {
-	db := openDb(t)
 	defer cleanDb(db, t)
 
 	usersCtrl := getUsersController(db)
@@ -114,7 +110,6 @@ func TestSubscribeUser(t *testing.T) {
 }
 
 func TestLogin(t *testing.T) {
-	db := openDb(t)
 	defer cleanDb(db, t)
 
 	usersRepo := repo.NewUsersRepository(db)
@@ -138,7 +133,6 @@ func TestLogin(t *testing.T) {
 }
 
 func TestLogin_UserDoesntExist(t *testing.T) {
-	db := openDb(t)
 	defer cleanDb(db, t)
 
 	resRec := httptest.NewRecorder()

@@ -7,7 +7,6 @@ import (
 )
 
 func TestCreateToken(t *testing.T) {
-	db := openDb(t)
 	defer cleanDb(db, t)
 
 	tokRepo := repo.NewUnverifiedUsersRepository(db)
@@ -22,7 +21,6 @@ func TestCreateToken(t *testing.T) {
 }
 
 func TestGetUserByToken(t *testing.T) {
-	db := openDb(t)
 	defer cleanDb(db, t)
 
 	tokRepo := repo.NewUnverifiedUsersRepository(db)

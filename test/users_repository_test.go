@@ -8,7 +8,6 @@ import (
 )
 
 func TestAddUser(t *testing.T) {
-	db := openDb(t)
 	defer cleanDb(db, t)
 
 	repo := repo.NewUsersRepository(db)
@@ -21,7 +20,6 @@ func TestAddUser(t *testing.T) {
 }
 
 func TestMakeSigned(t *testing.T) {
-	db := openDb(t)
 	defer cleanDb(db, t)
 
 	repo := repo.NewUsersRepository(db)
