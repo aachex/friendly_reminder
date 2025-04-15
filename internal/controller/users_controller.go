@@ -107,9 +107,19 @@ func (c *UsersController) AddEndpoints(mux *http.ServeMux) {
 //
 // Обрабатывает POST запросы по пути '/users/new'.
 func (c *UsersController) SendConfirmEmailLink(w http.ResponseWriter, r *http.Request) {
-	user, err := readBody[models.User](r.Body)
+	type reqBody struct {
+		Email, Password string
+	}
+
+	user, err := readBody[reqBody](r.Body)
 	if err != nil {
 		http.Error(w, errReadingBody.Error(), http.StatusBadRequest)
+		return
+	}
+
+	if user.Email == "" || user.Password == "" {
+		http.Error(w, "invalid email or password", http.StatusBadRequest)
+		return
 	}
 
 	if c.usersRepo.EmailExists(r.Context(), user.Email) {
