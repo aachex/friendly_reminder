@@ -6,9 +6,9 @@ import (
 	"strconv"
 
 	"github.com/artemwebber1/friendly_reminder/internal/config"
-	mw "github.com/artemwebber1/friendly_reminder/internal/middleware"
+	"github.com/artemwebber1/friendly_reminder/internal/logging"
 	"github.com/artemwebber1/friendly_reminder/internal/models"
-	"github.com/artemwebber1/friendly_reminder/pkg/jwtutil"
+	"github.com/artemwebber1/friendly_reminder/pkg/authorization"
 )
 
 type tasksRepository interface {
@@ -42,22 +42,22 @@ func NewTasksController(tr tasksRepository, ur usersRepository, cfg *config.Conf
 func (c *TasksController) AddEndpoints(mux *http.ServeMux) {
 	mux.HandleFunc(
 		"POST "+c.cfg.Prefix+"/tasks/new",
-		mw.UseLogging(mw.UseAuthorization(c.CreateTask)),
+		logging.Middleware(authorization.Middleware(c.CreateTask)),
 	)
 
 	mux.HandleFunc(
 		"GET "+c.cfg.Prefix+"/tasks/list",
-		mw.UseLogging(mw.UseAuthorization(c.GetList)),
+		logging.Middleware(authorization.Middleware(c.GetList)),
 	)
 
 	mux.HandleFunc(
 		"DELETE "+c.cfg.Prefix+"/tasks/clear-list",
-		mw.UseLogging(mw.UseAuthorization(c.ClearList)),
+		logging.Middleware(authorization.Middleware(c.ClearList)),
 	)
 
 	mux.HandleFunc(
 		"DELETE "+c.cfg.Prefix+"/tasks/del",
-		mw.UseLogging(mw.UseAuthorization(c.DeleteTask)),
+		logging.Middleware(authorization.Middleware(c.DeleteTask)),
 	)
 }
 
@@ -65,8 +65,8 @@ func (c *TasksController) AddEndpoints(mux *http.ServeMux) {
 //
 // Обрабатывает POST запросы по пути '/tasks/new'.
 func (c *TasksController) CreateTask(w http.ResponseWriter, r *http.Request) {
-	rawJwt := jwtutil.FromHeader(r.Header)
-	jwtClaims, err := jwtutil.GetClaims(rawJwt, jwtKey())
+	rawJwt := authorization.FromHeader(r.Header)
+	jwtClaims, err := authorization.GetClaims(rawJwt, jwtKey())
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusForbidden)
 		return
@@ -110,8 +110,8 @@ func (c *TasksController) CreateTask(w http.ResponseWriter, r *http.Request) {
 //
 // Обрабатывает GET запросы по пути '/tasks/list'.
 func (c *TasksController) GetList(w http.ResponseWriter, r *http.Request) {
-	rawJwt := jwtutil.FromHeader(r.Header)
-	jwtClaims, err := jwtutil.GetClaims(rawJwt, jwtKey())
+	rawJwt := authorization.FromHeader(r.Header)
+	jwtClaims, err := authorization.GetClaims(rawJwt, jwtKey())
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusForbidden)
 		return
@@ -141,8 +141,8 @@ func (c *TasksController) GetList(w http.ResponseWriter, r *http.Request) {
 //
 // Обрабатывает DELETE запросы по пути '/tasks/clear-list'.
 func (c *TasksController) ClearList(w http.ResponseWriter, r *http.Request) {
-	rawJwt := jwtutil.FromHeader(r.Header)
-	jwtClaims, err := jwtutil.GetClaims(rawJwt, jwtKey())
+	rawJwt := authorization.FromHeader(r.Header)
+	jwtClaims, err := authorization.GetClaims(rawJwt, jwtKey())
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusForbidden)
 		return
@@ -170,8 +170,8 @@ func (c *TasksController) ClearList(w http.ResponseWriter, r *http.Request) {
 //
 // Обрабатывает DELETE запросы по пути '/tasks/del'.
 func (c *TasksController) DeleteTask(w http.ResponseWriter, r *http.Request) {
-	rawJwt := jwtutil.FromHeader(r.Header)
-	jwtClaims, err := jwtutil.GetClaims(rawJwt, jwtKey())
+	rawJwt := authorization.FromHeader(r.Header)
+	jwtClaims, err := authorization.GetClaims(rawJwt, jwtKey())
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusForbidden)
 		return

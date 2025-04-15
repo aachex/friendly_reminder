@@ -10,10 +10,10 @@ import (
 
 	"github.com/artemwebber1/friendly_reminder/internal/config"
 	"github.com/artemwebber1/friendly_reminder/internal/hasher"
-	mw "github.com/artemwebber1/friendly_reminder/internal/middleware"
+	"github.com/artemwebber1/friendly_reminder/internal/logging"
 	"github.com/artemwebber1/friendly_reminder/internal/models"
+	"github.com/artemwebber1/friendly_reminder/pkg/authorization"
 	"github.com/artemwebber1/friendly_reminder/pkg/email"
-	"github.com/artemwebber1/friendly_reminder/pkg/jwtutil"
 	"github.com/golang-jwt/jwt/v5"
 )
 
@@ -84,22 +84,22 @@ func NewUsersController(
 func (c *UsersController) AddEndpoints(mux *http.ServeMux) {
 	mux.HandleFunc(
 		"POST "+c.cfg.Prefix+"/users/new",
-		mw.UseLogging(c.SendConfirmEmailLink),
+		logging.Middleware(c.SendConfirmEmailLink),
 	)
 
 	mux.HandleFunc(
 		"POST "+c.cfg.Prefix+"/users/login",
-		mw.UseLogging(c.Login),
+		logging.Middleware(c.Login),
 	)
 
 	mux.HandleFunc(
 		"GET "+c.cfg.Prefix+"/users/confirm-email",
-		mw.UseLogging(c.ConfirmEmail),
+		logging.Middleware(c.ConfirmEmail),
 	)
 
 	mux.HandleFunc(
 		"PATCH "+c.cfg.Prefix+"/users/subscribe",
-		mw.UseLogging(mw.UseAuthorization(c.SubscribeUser)),
+		logging.Middleware(authorization.Middleware(c.SubscribeUser)),
 	)
 }
 
@@ -180,9 +180,9 @@ func (c *UsersController) ConfirmEmail(w http.ResponseWriter, r *http.Request) {
 //
 // Обрабатывает PATCH запросы по пути '/users/subscribe'.
 func (c *UsersController) SubscribeUser(w http.ResponseWriter, r *http.Request) {
-	rawJwt := jwtutil.FromHeader(r.Header)
+	rawJwt := authorization.FromHeader(r.Header)
 
-	jwtClaims, err := jwtutil.GetClaims(rawJwt, jwtKey())
+	jwtClaims, err := authorization.GetClaims(rawJwt, jwtKey())
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusForbidden)
 		return

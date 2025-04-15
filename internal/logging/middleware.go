@@ -1,4 +1,4 @@
-package middleware
+package logging
 
 import (
 	"log"
@@ -29,7 +29,7 @@ func (w *loggingResponseWriter) Write(data []byte) (int, error) {
 	return n, err
 }
 
-func UseLogging(next http.HandlerFunc) http.HandlerFunc {
+func Middleware(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		log.Printf("New request to '%s' endpoint", r.Pattern)
 		lrw := newLoggingResponseWriter(w)

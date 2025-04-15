@@ -1,13 +1,11 @@
-package middleware
+package authorization
 
 import (
 	"net/http"
 	"os"
-
-	"github.com/artemwebber1/friendly_reminder/pkg/jwtutil"
 )
 
-func UseAuthorization(next http.HandlerFunc) http.HandlerFunc {
+func Middleware(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		auth := r.Header.Get("Authorization")
 		if len(auth) <= 8 {
@@ -17,7 +15,7 @@ func UseAuthorization(next http.HandlerFunc) http.HandlerFunc {
 
 		tok := auth[7:]
 
-		_, err := jwtutil.Parse(tok, []byte(os.Getenv("SECRET_STR")))
+		_, err := ParseJWT(tok, []byte(os.Getenv("SECRET_STR")))
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusForbidden)
 			return
