@@ -10,10 +10,10 @@ import (
 
 	"github.com/artemwebber1/friendly_reminder/internal/config"
 	"github.com/artemwebber1/friendly_reminder/internal/hasher"
-	"github.com/artemwebber1/friendly_reminder/internal/logging"
 	"github.com/artemwebber1/friendly_reminder/internal/models"
 	"github.com/artemwebber1/friendly_reminder/pkg/authorization"
 	"github.com/artemwebber1/friendly_reminder/pkg/email"
+	"github.com/artemwebber1/friendly_reminder/pkg/logging"
 	"github.com/golang-jwt/jwt/v5"
 )
 
