@@ -1,17 +1,17 @@
-FROM golang:1.24.2-alpine3.21
+FROM golang:1.24
 
 WORKDIR /app
+
+COPY go.mod go.sum /app/
+
+RUN go mod download
+
 COPY . /app/
 
-RUN apk update
-
-# dependencies
-RUN go get -d -u github.com/joho/godotenv
-RUN go get -d -u github.com/golang-jwt/jwt/v5
-RUN go get -d -u github.com/lib/pq
+RUN go build -o app.exe
 
 EXPOSE 8080
 
 STOPSIGNAL SIGINT
 
-CMD [ "go", "run", "/app/main.go" ]
+CMD [ "/app/app.exe" ]
