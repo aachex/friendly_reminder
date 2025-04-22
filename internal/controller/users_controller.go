@@ -84,22 +84,22 @@ func NewUsersController(
 
 func (c *UsersController) AddEndpoints(mux *http.ServeMux) {
 	mux.HandleFunc(
-		"POST "+c.cfg.Prefix+"/users/new",
+		c.cfg.Prefix+"/users/new",
 		logging.Middleware(cors.Middleware(c.SendConfirmEmailLink)),
 	)
 
 	mux.HandleFunc(
-		"POST "+c.cfg.Prefix+"/users/login",
+		c.cfg.Prefix+"/users/login",
 		logging.Middleware(cors.Middleware(c.Login)),
 	)
 
 	mux.HandleFunc(
-		"GET "+c.cfg.Prefix+"/users/confirm-email",
+		c.cfg.Prefix+"/users/confirm-email",
 		logging.Middleware(cors.Middleware(c.ConfirmEmail)),
 	)
 
 	mux.HandleFunc(
-		"PATCH "+c.cfg.Prefix+"/users/subscribe",
+		c.cfg.Prefix+"/users/subscribe",
 		logging.Middleware(cors.Middleware(authorization.Middleware(c.SubscribeUser))),
 	)
 }

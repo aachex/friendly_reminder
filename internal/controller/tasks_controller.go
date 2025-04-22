@@ -42,22 +42,22 @@ func NewTasksController(tr tasksRepository, ur usersRepository, cfg *config.Conf
 
 func (c *TasksController) AddEndpoints(mux *http.ServeMux) {
 	mux.HandleFunc(
-		"POST "+c.cfg.Prefix+"/tasks/new",
+		c.cfg.Prefix+"/tasks/new",
 		logging.Middleware(cors.Middleware(authorization.Middleware(c.CreateTask))),
 	)
 
 	mux.HandleFunc(
-		"GET "+c.cfg.Prefix+"/tasks/list",
+		c.cfg.Prefix+"/tasks/list",
 		logging.Middleware(cors.Middleware(authorization.Middleware(c.GetList))),
 	)
 
 	mux.HandleFunc(
-		"DELETE "+c.cfg.Prefix+"/tasks/clear-list",
+		c.cfg.Prefix+"/tasks/clear-list",
 		logging.Middleware(cors.Middleware(authorization.Middleware(c.ClearList))),
 	)
 
 	mux.HandleFunc(
-		"DELETE "+c.cfg.Prefix+"/tasks/del",
+		c.cfg.Prefix+"/tasks/del",
 		logging.Middleware(cors.Middleware(authorization.Middleware(c.DeleteTask))),
 	)
 }
