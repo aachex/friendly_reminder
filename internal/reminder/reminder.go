@@ -77,17 +77,17 @@ func (s *defaultReminder) sendList(ctx context.Context, email string) {
 	// 1. Задача 1
 	// 2. Задача 2
 	// ...
-	body := "Here is your to-do list:"
+	body := ""
 	for i, item := range list {
 		body += fmt.Sprintf("\n%d. %s", i+1, item.Value)
 	}
 
-	subject := "Your to-do list"
+	subject := "Friendly reminder: ваш список дел"
 	if len(list) == 0 {
 		// Отписываем пользователя от рассылки, если его список пуст.
 		// Меняем заголовок и тело письма, чтобы уведомить пользователя об этом.
-		subject = "You were unsubscribed from the mailing."
-		body = "Your to-do list is empty. Add new tasks to your list and subscribe to the mailing."
+		subject = "Вы отписаны от рассылки"
+		body = "Ваш список дел пуст. Добавьте в него новые дела и подпишитесь на рассылку заново"
 		s.usersRepo.Subscribe(ctx, email, false) // Отписка от рассылки
 	}
 

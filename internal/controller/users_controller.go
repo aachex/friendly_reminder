@@ -147,8 +147,8 @@ func (c *UsersController) SendConfirmEmailLink(w http.ResponseWriter, r *http.Re
 
 	log.Printf("Sending an email confirmation link to '%s'...\n", user.Email)
 
-	const subject = "Email confirmation"
-	body := fmt.Sprintf("Please, confirm your email by clicking on the link:\n%s\n\nIf you didn't request this mail, ignore it.", confirmLink)
+	const subject = "Friendly reminder"
+	body := fmt.Sprintf("Пожалуйста, подтвердите свою электронную почту, перейдя по ссылке:\n%s\n\nЕсли вы не запрашивали это письмо, проигнорируйте его.", confirmLink)
 
 	go c.emailSender.Send(
 		subject,
@@ -180,7 +180,7 @@ func (c *UsersController) ConfirmEmail(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusCreated)
-	w.Write([]byte("Email confirmed succesfully"))
+	w.Write([]byte("Почта подтверждена"))
 
 	// Пользователь успешно подтвердил электронную почту, добавляем его в базу данных
 	c.usersRepo.AddUser(r.Context(), user.Email, user.Password)
@@ -214,6 +214,12 @@ func (c *UsersController) SubscribeUser(w http.ResponseWriter, r *http.Request) 
 		http.Error(w, "invalid value for 'subscribe' param", http.StatusBadRequest)
 		return
 	}
+
+	body := "Вы подписались на рассылку. Теперь ваш список дел будет приходить к вам на почту каждые 6 часов"
+	if !subscribe {
+		body = "Вы отписались от рассылки"
+	}
+	go c.emailSender.Send("Friendly reminder", body, email)
 	c.usersRepo.Subscribe(r.Context(), email, subscribe)
 }
 
