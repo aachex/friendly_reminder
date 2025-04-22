@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"strconv"
 	"testing"
 
 	"github.com/artemwebber1/friendly_reminder/internal/hasher"
@@ -69,11 +70,13 @@ func TestDeleteTask(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	url := fmt.Sprintf(addr+"/tasks/del?id=%d", id)
+	url := addr + "/tasks/del/{id}"
 	req, err := http.NewRequest(http.MethodDelete, url, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
+
+	req.SetPathValue("id", strconv.FormatInt(id, 10))
 
 	resRec := httptest.NewRecorder()
 

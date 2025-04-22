@@ -57,7 +57,7 @@ func (c *TasksController) AddEndpoints(mux *http.ServeMux) {
 	)
 
 	mux.HandleFunc(
-		c.cfg.Prefix+"/tasks/del",
+		c.cfg.Prefix+"/tasks/del/{id}",
 		logging.Middleware(cors.Middleware(authorization.Middleware(c.DeleteTask))),
 	)
 }
@@ -189,7 +189,7 @@ func (c *TasksController) DeleteTask(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	taskId, err := strconv.ParseInt(r.URL.Query().Get("id"), 10, 64)
+	taskId, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
