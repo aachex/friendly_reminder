@@ -80,7 +80,7 @@ func (c *TasksController) CreateTask(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if !c.usersRepo.EmailExists(r.Context(), email) {
-		http.Error(w, errInvalidInvalidEmail.Error(), http.StatusForbidden)
+		http.Error(w, errInvalidEmail.Error(), http.StatusForbidden)
 		return
 	}
 
@@ -125,7 +125,7 @@ func (c *TasksController) GetList(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if !c.usersRepo.EmailExists(r.Context(), email) {
-		http.Error(w, errInvalidInvalidEmail.Error(), http.StatusForbidden)
+		http.Error(w, errInvalidEmail.Error(), http.StatusForbidden)
 		return
 	}
 
@@ -156,7 +156,7 @@ func (c *TasksController) ClearList(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if !c.usersRepo.EmailExists(r.Context(), email) {
-		http.Error(w, errInvalidInvalidEmail.Error(), http.StatusForbidden)
+		http.Error(w, errInvalidEmail.Error(), http.StatusForbidden)
 		return
 	}
 
@@ -185,7 +185,7 @@ func (c *TasksController) DeleteTask(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if !c.usersRepo.EmailExists(r.Context(), email) {
-		http.Error(w, errInvalidInvalidEmail.Error(), http.StatusForbidden)
+		http.Error(w, errInvalidEmail.Error(), http.StatusForbidden)
 		return
 	}
 

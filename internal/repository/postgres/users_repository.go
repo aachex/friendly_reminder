@@ -4,6 +4,8 @@ import (
 	"context"
 	"database/sql"
 	"sync"
+
+	"github.com/artemwebber1/friendly_reminder/internal/models"
 )
 
 type UsersRepository struct {
@@ -44,6 +46,18 @@ func (r *UsersRepository) Subscribe(ctx context.Context, email string, subscribe
 
 	_, err := r.db.ExecContext(ctx, "UPDATE users SET subscribed = $1 WHERE email = $2", subscribe, email)
 	return err
+}
+
+func (r *UsersRepository) GetByEmail(ctx context.Context, email string) (*models.User, error) {
+	row := r.db.QueryRowContext(ctx, "SELECT email, password, subscribed FROM users WHERE email = $1", email)
+
+	var u models.User
+	err := row.Scan(&u.Email, &u.Password, &u.Subscribed)
+	if err != nil {
+		return nil, err
+	}
+
+	return &u, nil
 }
 
 // GetEmailsSubscribed возвращает список зарегестрированных электронных почт пользователей, подписанных на рассылку.

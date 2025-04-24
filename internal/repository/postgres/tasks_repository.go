@@ -47,7 +47,7 @@ func (r *TasksRepository) DeleteTask(ctx context.Context, id int64) error {
 
 // GetList возвращает список дел пользователя с указанным email.
 func (r *TasksRepository) GetList(ctx context.Context, userEmail string) ([]models.Task, error) {
-	rows, err := r.db.QueryContext(ctx, "SELECT * FROM tasks WHERE user_email = $1", userEmail)
+	rows, err := r.db.QueryContext(ctx, "SELECT task_id, user_email, value FROM tasks WHERE user_email = $1", userEmail)
 	if err != nil {
 		return []models.Task{}, err
 	}

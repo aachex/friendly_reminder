@@ -6,7 +6,6 @@ import (
 	"log"
 	"net/http"
 	"strconv"
-	"time"
 
 	"github.com/artemwebber1/friendly_reminder/internal/config"
 	"github.com/artemwebber1/friendly_reminder/internal/hasher"
@@ -28,6 +27,9 @@ type usersRepository interface {
 	// Subscribe подписывает пользователя на рассылку электронных писем.
 	// Если параметр subscribe = true, пользователь будет подписан на рассылку, иначе будет отписан.
 	Subscribe(ctx context.Context, email string, subscr bool) error
+
+	// GetByEmail возвращает пользователя с указанным email.
+	GetByEmail(ctx context.Context, email string) (*models.User, error)
 
 	// EmailExists возвращает true если пользователь с данной электронной почтой уже существует.
 	EmailExists(ctx context.Context, email string) bool
@@ -101,6 +103,11 @@ func (c *UsersController) AddEndpoints(mux *http.ServeMux) {
 	mux.HandleFunc(
 		c.cfg.Prefix+"/users/subscribe",
 		logging.Middleware(cors.Middleware(authorization.Middleware(c.SubscribeUser))),
+	)
+
+	mux.HandleFunc(
+		c.cfg.Prefix+"/users/{email}",
+		logging.Middleware(cors.Middleware(c.GetByEmail)),
 	)
 }
 
@@ -205,7 +212,7 @@ func (c *UsersController) SubscribeUser(w http.ResponseWriter, r *http.Request) 
 	}
 
 	if !c.usersRepo.EmailExists(r.Context(), email) {
-		http.Error(w, errInvalidInvalidEmail.Error(), http.StatusForbidden)
+		http.Error(w, errInvalidEmail.Error(), http.StatusForbidden)
 		return
 	}
 
@@ -221,6 +228,24 @@ func (c *UsersController) SubscribeUser(w http.ResponseWriter, r *http.Request) 
 	}
 	go c.emailSender.Send("Friendly reminder", body, email)
 	c.usersRepo.Subscribe(r.Context(), email, subscribe)
+}
+
+func (c *UsersController) GetByEmail(w http.ResponseWriter, r *http.Request) {
+	email := r.PathValue("email")
+	u, err := c.usersRepo.GetByEmail(r.Context(), email)
+	if err != nil {
+		http.Error(w, "invalid path value for 'email'", http.StatusBadRequest)
+	}
+
+	res := struct {
+		Email      string `json:"email"`
+		Subscribed bool   `json:"subscribed"`
+	}{
+		Email:      u.Email,
+		Subscribed: u.Subscribed,
+	}
+
+	writeJson(w, res)
 }
 
 // Login осуществляет вход уже существующего пользователя в систему.
@@ -241,7 +266,7 @@ func (c *UsersController) Login(w http.ResponseWriter, r *http.Request) {
 	// Создание jwt
 	claims := jwt.MapClaims{
 		"sub": user.Email,
-		"exp": time.Now().Add(time.Hour).Unix(),
+		//"exp": time.Now().Add(time.Hour).Unix(),
 	}
 
 	tok := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
