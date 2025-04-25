@@ -150,7 +150,7 @@ func (c *UsersController) SendConfirmEmailLink(w http.ResponseWriter, r *http.Re
 	}
 
 	// Ссылка для подтверждения электронной почты
-	confirmLink := c.cfg.Host + ":" + c.cfg.Port + c.cfg.Prefix + "/users/confirm-email?t=" + confirmToken
+	confirmLink := c.cfg.Host + c.cfg.Prefix + "/users/confirm-email?t=" + confirmToken
 
 	log.Printf("Sending an email confirmation link to '%s'...\n", user.Email)
 
