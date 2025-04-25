@@ -1,5 +1,5 @@
 {
-    "host": "http://localhost",
+    "host": "https://friendly-reminder.onrender.com",
     "port": "8080",
     "apiPrefix": "/api/v1",
     "readTimeout": 2000,
