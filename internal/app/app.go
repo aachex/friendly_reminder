@@ -3,7 +3,6 @@ package app
 import (
 	"context"
 	"database/sql"
-	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -64,7 +63,6 @@ func (a *App) Run(ctx context.Context) {
 
 	// Запуск сервера
 	addr := ":" + a.cfg.Port
-	fmt.Println("Listening:", a.cfg.Host+addr)
 
 	a.srv = &http.Server{
 		Addr:         addr,

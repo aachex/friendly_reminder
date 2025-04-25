@@ -14,13 +14,6 @@ import (
 )
 
 func main() {
-	logFile, err := os.OpenFile("app.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer logFile.Close()
-	log.SetOutput(logFile)
-
 	// Конфигурация
 	cfg := config.NewConfig("./config/config.json")
 
@@ -39,7 +32,7 @@ func main() {
 	shutdownCtx, cancel := context.WithTimeout(bg, time.Second*5)
 	defer cancel()
 
-	err = app.Shutdown(shutdownCtx)
+	err := app.Shutdown(shutdownCtx)
 	if err != nil {
 		log.Fatalf("Shutdown error: %s", err)
 	}
