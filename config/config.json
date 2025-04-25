@@ -19,6 +19,6 @@
         "emailPort": "587"
     },
     "listSenderOptions": {
-        "delay": 300
+        "delay": 21600
     }
 }
