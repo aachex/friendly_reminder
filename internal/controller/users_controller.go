@@ -97,6 +97,11 @@ func (c *UsersController) AddEndpoints(mux *http.ServeMux) {
 	)
 
 	mux.HandleFunc(
+		c.cfg.Prefix+"/users/refresh",
+		logging.Middleware(cors.Middleware(c.Refresh)),
+	)
+
+	mux.HandleFunc(
 		c.cfg.Prefix+"/users/confirm-email",
 		logging.Middleware(cors.Middleware(c.ConfirmEmail)),
 	)
@@ -278,4 +283,8 @@ func (c *UsersController) Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Write([]byte(tokStr))
+}
+
+func (c *UsersController) Refresh(w http.ResponseWriter, r *http.Request) {
+	// TODO: implement
 }
