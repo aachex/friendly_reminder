@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/artemwebber1/friendly_reminder/internal/config"
 	"github.com/artemwebber1/friendly_reminder/internal/hasher"
@@ -266,7 +267,7 @@ func (c *UsersController) Login(w http.ResponseWriter, r *http.Request) {
 	// Создание jwt
 	claims := jwt.MapClaims{
 		"sub": user.Email,
-		//"exp": time.Now().Add(time.Hour).Unix(),
+		"exp": time.Now().Add(time.Hour).Unix(),
 	}
 
 	tok := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
