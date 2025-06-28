@@ -87,32 +87,32 @@ func NewUsersController(
 
 func (c *UsersController) AddEndpoints(mux *http.ServeMux) {
 	mux.HandleFunc(
-		c.cfg.Prefix+"/users/new",
+		c.cfg.ApiPrefix+"/users/new",
 		logging.Middleware(cors.Middleware(c.SendConfirmEmailLink)),
 	)
 
 	mux.HandleFunc(
-		c.cfg.Prefix+"/users/login",
+		c.cfg.ApiPrefix+"/users/login",
 		logging.Middleware(cors.Middleware(c.Login)),
 	)
 
 	mux.HandleFunc(
-		c.cfg.Prefix+"/users/refresh",
+		c.cfg.ApiPrefix+"/users/refresh",
 		logging.Middleware(cors.Middleware(c.Refresh)),
 	)
 
 	mux.HandleFunc(
-		c.cfg.Prefix+"/users/confirm-email",
+		c.cfg.ApiPrefix+"/users/confirm-email",
 		logging.Middleware(cors.Middleware(c.ConfirmEmail)),
 	)
 
 	mux.HandleFunc(
-		c.cfg.Prefix+"/users/subscribe",
+		c.cfg.ApiPrefix+"/users/subscribe",
 		logging.Middleware(cors.Middleware(authorization.Middleware(c.SubscribeUser))),
 	)
 
 	mux.HandleFunc(
-		c.cfg.Prefix+"/users/{email}",
+		c.cfg.ApiPrefix+"/users/{email}",
 		logging.Middleware(cors.Middleware(c.GetByEmail)),
 	)
 }
@@ -156,7 +156,7 @@ func (c *UsersController) SendConfirmEmailLink(w http.ResponseWriter, r *http.Re
 	}
 
 	// Ссылка для подтверждения электронной почты
-	confirmLink := c.cfg.Host + ":" + c.cfg.Port + c.cfg.Prefix + "/users/confirm-email?t=" + confirmToken
+	confirmLink := c.cfg.Host + ":" + c.cfg.Port + c.cfg.ApiPrefix + "/users/confirm-email?t=" + confirmToken
 
 	log.Printf("Sending an email confirmation link to '%s'...\n", user.Email)
 

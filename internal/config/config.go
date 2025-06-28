@@ -14,7 +14,7 @@ type DbConfig struct {
 type Config struct {
 	Host         string        `json:"host"`
 	Port         string        `json:"port"`
-	Prefix       string        `json:"apiPrefix"`
+	ApiPrefix    string        `json:"apiPrefix"`
 	ReadTimeout  time.Duration `jsom:"readTimeout"`
 	WriteTimeout time.Duration `jsom:"writeTimeout"`
 
