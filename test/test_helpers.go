@@ -41,7 +41,7 @@ func init() {
 
 	cfg = config.NewConfig("../config/config.json")
 	dbUsed = cfg.Database.Postgres
-	addr = cfg.Host + ":" + cfg.Port + cfg.Prefix
+	addr = cfg.Host + ":" + cfg.Port + cfg.ApiPrefix
 	db, err = sql.Open(dbUsed.DriverName, os.Getenv(dbUsed.ConnStrEnv))
 	if err != nil {
 		panic(err)
